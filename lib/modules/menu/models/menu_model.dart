@@ -17,12 +17,12 @@ class MenuModel {
 
   factory MenuModel.fromJson(Map<String, dynamic> json) {
     return MenuModel(
-      id: json['id'] ?? 0,
-      nama: json['nama'] ?? '',
-      deskripsi: json['deskripsi'] ?? '',
-      harga: (json['harga'] ?? 0).toDouble(),
-      kategori: json['kategori'] ?? '',
-      gambar: json['gambar'],
+      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
+      nama: json['nama']?.toString() ?? '',
+      deskripsi: json['deskripsi']?.toString() ?? '',
+      harga: double.tryParse(json['harga']?.toString() ?? '0') ?? 0.0,
+      kategori: json['kategori']?.toString() ?? '',
+      gambar: json['gambar']?.toString(),
     );
   }
 
