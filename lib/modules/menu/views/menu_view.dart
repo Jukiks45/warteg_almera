@@ -119,13 +119,52 @@ class MenuView extends GetView<Menu.MenuController> {
                 ),
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(12),
-                  leading: CircleAvatar(
-                    radius: 30,
-                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                    child: Icon(
-                      _getIconByCategory(menu.kategori),
-                      color: Theme.of(context).colorScheme.primary,
-                      size: 30,
+                  leading: Hero(
+                    tag: 'menu-${menu.id}',
+                    child: Material(
+                      child: InkWell(
+                        onTap: () {
+                          // Tampilkan gambar full screen ketika di tap
+                          if (menu.gambar != null && menu.gambar!.isNotEmpty) {
+                            Get.to(() => Scaffold(
+                              appBar: AppBar(
+                                backgroundColor: Colors.black,
+                                leading: IconButton(
+                                  icon: const Icon(Icons.close, color: Colors.white),
+                                  onPressed: () => Get.back(),
+                                ),
+                              ),
+                              backgroundColor: Colors.black,
+                              body: Center(
+                                child: InteractiveViewer(
+                                  child: Image.network(
+                                    menu.gambar!,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              ),
+                            ));
+                          }
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: menu.gambar != null && menu.gambar!.isNotEmpty
+                              ? Image.network(
+                                  menu.gambar!,
+                                  width: 80,
+                                  height: 80,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return _buildFallbackIcon(context, menu.kategori);
+                                  },
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return _buildLoadingIndicator(context);
+                                  },
+                                )
+                              : _buildFallbackIcon(context, menu.kategori),
+                        ),
+                      ),
                     ),
                   ),
                   title: Text(
@@ -203,5 +242,29 @@ class MenuView extends GetView<Menu.MenuController> {
           RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
           (Match m) => '${m[1]}.',
         );
+  }
+
+  Widget _buildFallbackIcon(BuildContext context, String kategori) {
+    return Container(
+      width: 80,
+      height: 80,
+      color: Theme.of(context).colorScheme.primaryContainer,
+      child: Icon(
+        _getIconByCategory(kategori),
+        color: Theme.of(context).colorScheme.primary,
+        size: 40,
+      ),
+    );
+  }
+
+  Widget _buildLoadingIndicator(BuildContext context) {
+    return Container(
+      width: 80,
+      height: 80,
+      color: Theme.of(context).colorScheme.primaryContainer,
+      child: const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
   }
 }

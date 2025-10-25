@@ -22,7 +22,7 @@ class MenuModel {
       deskripsi: json['deskripsi']?.toString() ?? '',
       harga: double.tryParse(json['harga']?.toString() ?? '0') ?? 0.0,
       kategori: json['kategori']?.toString() ?? '',
-      gambar: json['gambar']?.toString(),
+      gambar: json['Image_network']?.toString(),
     );
   }
 
@@ -33,7 +33,7 @@ class MenuModel {
       'deskripsi': deskripsi,
       'harga': harga,
       'kategori': kategori,
-      'gambar': gambar,
+      'Image_network': gambar,
     };
   }
 }

@@ -13,6 +13,7 @@ class MenuController extends GetxController {
   var filteredMenu = <MenuModel>[].obs;
   var selectedCategory = 'Semua'.obs;
   
+  
   // Daftar kategori untuk filter
   var categories = <String>[].obs;
 
