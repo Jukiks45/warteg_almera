@@ -3,8 +3,10 @@ import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
 
 class ApiService {
-  static const String baseUrl = 'https://api.example.com';
-  static const String menuEndpoint = '/menus';
+  // Base URL should be the API root. Keep endpoints separate to avoid
+  // accidental duplication like .../menu/menu when combining baseUrl+endpoint.
+  static const String baseUrl = 'https://68fce98b96f6ff19b9f6afe8.mockapi.io/Almera';
+  static const String menuEndpoint = '/menu';
 
   // Metode 1: Menggunakan package http
   Future<List<dynamic>> getMenuWithHttp() async {
@@ -16,7 +18,18 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return data['data'] ?? [];
+
+        // Some APIs return a top-level list, others wrap the list in a map
+        // under the 'data' key. Handle both cases to be robust.
+        if (data is List) {
+          return data;
+        } else if (data is Map && data.containsKey('data')) {
+          final inner = data['data'];
+          if (inner is List) return inner;
+        }
+
+        // If structure is unexpected, return empty list with clear message
+        return [];
       } else {
         throw Exception('Gagal memuat menu: ${response.statusCode}');
       }
@@ -38,7 +51,14 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final data = response.data;
-        return data['data'] ?? [];
+
+        if (data is List) return data;
+        if (data is Map && data.containsKey('data')) {
+          final inner = data['data'];
+          if (inner is List) return inner;
+        }
+
+        return [];
       } else {
         throw Exception('Gagal memuat menu: ${response.statusCode}');
       }
