@@ -19,7 +19,7 @@ class LoginView extends GetView<LoginController> {
                 // Logo atau Icon
                 Icon(
                   Icons.restaurant_menu,
-                  size: 80,
+                  size: 120,
                   color: Theme.of(context).colorScheme.primary,
                 ),
                 const SizedBox(height: 16),
@@ -34,6 +34,16 @@ class LoginView extends GetView<LoginController> {
                   ),
                 ),
                 const SizedBox(height: 8),
+
+                Text(
+                  'Almera',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(height: 7),
                 
                 Text(
                   'Silakan login untuk melanjutkan',
