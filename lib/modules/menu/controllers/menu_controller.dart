@@ -5,81 +5,62 @@ import '../../../services/api_service.dart';
 class MenuController extends GetxController {
   final ApiService _apiService = Get.find<ApiService>();
 
+  // Variabel untuk status loading dan error
   var isLoading = false.obs;
   var isError = false.obs;
   var errorMessage = ''.obs;
-  var listMenu = <MenuModel>[].obs;
-  var filteredMenu = <MenuModel>[].obs;
-  var selectedCategory = 'Semua'.obs;
-  var selectedMenu = Rxn<MenuModel>();
 
-  // Daftar kategori untuk filter
-  var categories = <String>[].obs;
+  // Variabel utama untuk data:
+  var listMenu = <MenuModel>[].obs; // Menyimpan hasil API call pertama (List)
+  var selectedMenu = Rxn<MenuModel>(); // Menyimpan hasil API call kedua (Detail)
 
   @override
   void onInit() {
     super.onInit();
-    fetchMenuWithDetail(); // Changed to use chained request
+    // Default load Dio async-await untuk inisialisasi awal
+    fetchMenuWithDetail(); 
   }
 
-  // Implementasi 1: Async-await untuk chained request
+  // --- 1. Async-Await Chained Request (Dio) ---
   Future<void> fetchMenuWithDetail() async {
     final stopwatch = Stopwatch()..start();
-
     try {
       isLoading.value = true;
       isError.value = false;
       errorMessage.value = '';
 
       final result = await _apiService.getMenuWithDetail();
-      
+
       stopwatch.stop();
       final responseTime = stopwatch.elapsedMilliseconds / 1000;
 
-      // Show response time dialog
+      listMenu.value = result['menuList'];
+      selectedMenu.value = result['selectedMenu'];
+
       Get.defaultDialog(
-        title: 'Response Time',
-        middleText: 'Loaded in ${responseTime.toStringAsFixed(2)} seconds ✅',
+        title: 'Response Time (Dio Async-Await)',
+        middleText: 'Loaded in ${responseTime.toStringAsFixed(2)} s ✅',
         textConfirm: 'Close',
         onConfirm: () => Get.back(),
       );
-
-      // Update state with results
-      listMenu.value = result['menuList'];
-      selectedMenu.value = result['selectedMenu'];
-      filteredMenu.value = List<MenuModel>.from(listMenu);
-
-      // Update categories
-      final uniqueCategories = 
-          listMenu.map((menu) => menu.kategori).toSet().toList();
-      categories.value = ['Semua', ...uniqueCategories];
-
     } catch (e) {
       stopwatch.stop();
       isError.value = true;
       errorMessage.value = e.toString();
 
-      // Show error dialog
       Get.defaultDialog(
-        title: 'Error',
-        middleText: 
-            'Failed in ${(stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(2)} seconds ❌\n\n$e',
+        title: 'Error (Dio Async-Await)',
+        middleText: 'Failed in ${(stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(2)} s ❌\n\n$e',
         textConfirm: 'Close',
         onConfirm: () => Get.back(),
-      );
-
-      Get.snackbar(
-        'Error',
-        'Gagal memuat data menu: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
       isLoading.value = false;
     }
   }
 
-  // Implementasi 2: Callback untuk chained request
-  void fetchMenuWithDetailCallback() {
+  // --- 2. Callback Chaining Chained Request (Dio) ---
+  void fetchMenuWithDetailCallback() { 
     final stopwatch = Stopwatch()..start();
     isLoading.value = true;
     isError.value = false;
@@ -88,22 +69,13 @@ class MenuController extends GetxController {
     _apiService.getMenuWithDetailCallback(
       onSuccess: (result) {
         stopwatch.stop();
-        
-        // Update state with results
+
         listMenu.value = result['menuList'];
         selectedMenu.value = result['selectedMenu'];
-        filteredMenu.value = List<MenuModel>.from(listMenu);
 
-        // Update categories
-        final uniqueCategories = 
-            listMenu.map((menu) => menu.kategori).toSet().toList();
-        categories.value = ['Semua', ...uniqueCategories];
-
-        // Show success dialog
         Get.defaultDialog(
-          title: 'Response Time',
-          middleText: 
-              'Loaded in ${(stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(2)} seconds ✅',
+          title: 'Response Time (Dio Callback)',
+          middleText: 'Loaded in ${(stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(2)} s ✅',
           textConfirm: 'Close',
           onConfirm: () => Get.back(),
         );
@@ -112,23 +84,14 @@ class MenuController extends GetxController {
       },
       onError: (error) {
         stopwatch.stop();
-        
         isError.value = true;
         errorMessage.value = error;
 
-        // Show error dialog
         Get.defaultDialog(
-          title: 'Error',
-          middleText: 
-              'Failed in ${(stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(2)} seconds ❌\n\n$error',
+          title: 'Error (Dio Callback)',
+          middleText: 'Failed in ${(stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(2)} s ❌\n\n$error',
           textConfirm: 'Close',
           onConfirm: () => Get.back(),
-        );
-
-        Get.snackbar(
-          'Error',
-          'Gagal memuat data menu: $error',
-          snackPosition: SnackPosition.BOTTOM,
         );
 
         isLoading.value = false;
@@ -136,25 +99,81 @@ class MenuController extends GetxController {
     );
   }
 
-  /// Filter menu berdasarkan kategori
-  void filterByCategory(String category) {
-    selectedCategory.value = category;
+  // --- 3. Async-Await Chained Request (HTTP) ---
+  Future<void> fetchMenuWithDetailHttp() async {
+    final stopwatch = Stopwatch()..start();
+    try {
+      isLoading.value = true;
+      isError.value = false;
+      errorMessage.value = '';
 
-    if (category == 'Semua') {
-      filteredMenu.value = List<MenuModel>.from(listMenu);
-    } else {
-      filteredMenu.value =
-          listMenu.where((menu) => menu.kategori == category).toList();
+      final result = await _apiService.getMenuWithDetailHttp();
+
+      stopwatch.stop();
+      final responseTime = stopwatch.elapsedMilliseconds / 1000;
+
+      listMenu.value = result['menuList'];
+      selectedMenu.value = result['selectedMenu'];
+
+      Get.defaultDialog(
+        title: 'Response Time (HTTP Async-Await)',
+        middleText: 'Loaded in ${responseTime.toStringAsFixed(2)} s ✅',
+        textConfirm: 'Close',
+        onConfirm: () => Get.back(),
+      );
+    } catch (e) {
+      stopwatch.stop();
+      isError.value = true;
+      errorMessage.value = e.toString();
+
+      Get.defaultDialog(
+        title: 'Error (HTTP Async-Await)',
+        middleText: 'Failed in ${(stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(2)} s ❌\n\n$e',
+        textConfirm: 'Close',
+        onConfirm: () => Get.back(),
+      );
+    } finally {
+      isLoading.value = false;
     }
   }
 
-  /// Refresh data menu
-  Future<void> refreshMenus() async {
-    await fetchMenuWithDetail(); // Changed to use chained request
-  }
+  // --- 4. Callback Chaining Chained Request (HTTP) ---
+  void fetchMenuWithDetailCallbackHttp() {
+    final stopwatch = Stopwatch()..start();
+    isLoading.value = true;
+    isError.value = false;
+    errorMessage.value = '';
 
-  /// Backwards-compatible API used by views
-  Future<void> refreshData() async {
-    await fetchMenuWithDetail(); // Changed to use chained request
+    _apiService.getMenuWithDetailCallbackHttp(
+      onSuccess: (result) {
+        stopwatch.stop();
+
+        listMenu.value = result['menuList'];
+        selectedMenu.value = result['selectedMenu'];
+
+        Get.defaultDialog(
+          title: 'Response Time (HTTP Callback)',
+          middleText: 'Loaded in ${(stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(2)} s ✅',
+          textConfirm: 'Close',
+          onConfirm: () => Get.back(),
+        );
+
+        isLoading.value = false;
+      },
+      onError: (error) {
+        stopwatch.stop();
+        isError.value = true;
+        errorMessage.value = error;
+
+        Get.defaultDialog(
+          title: 'Error (HTTP Callback)',
+          middleText: 'Failed in ${(stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(2)} s ❌\n\n$error',
+          textConfirm: 'Close',
+          onConfirm: () => Get.back(),
+        );
+
+        isLoading.value = false;
+      },
+    );
   }
 }
