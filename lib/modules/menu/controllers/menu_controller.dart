@@ -24,29 +24,50 @@ class MenuController extends GetxController {
   /// Fetch data menu dari API
   /// Gunakan salah satu metode: HTTP atau Dio
   Future<void> fetchMenus() async {
+    final stopwatch = Stopwatch()..start(); // ⏱ Start timing
+
     try {
       isLoading.value = true;
       isError.value = false;
       errorMessage.value = '';
-      // Pilih salah satu metode pada ApiService (default: http)
-      final raw = await _apiService.getMenuWithDio();
 
-      // Map JSON -> MenuModel
+      final raw = await _apiService.getMenuWithHttp();
+
+      stopwatch.stop(); // ⏱ Stop timing
+      final responseTime = stopwatch.elapsedMilliseconds / 1000;
+
+      // ✅ Show popup dialog with response time
+      Get.defaultDialog(
+        title: 'Response Time',
+        middleText: 'Loaded in ${responseTime.toStringAsFixed(2)} seconds ✅',
+        textConfirm: 'Close',
+        onConfirm: () => Get.back(),
+      );
+
       final menus = raw.map((json) => MenuModel.fromJson(json)).toList();
 
       listMenu.value = menus;
       filteredMenu.value = List<MenuModel>.from(menus);
 
-      // Extract unique categories (model uses 'kategori')
       final uniqueCategories =
           menus.map((menu) => menu.kategori).toSet().toList();
       categories.value = ['Semua', ...uniqueCategories];
 
       isLoading.value = false;
     } catch (e) {
+      stopwatch.stop();
       isLoading.value = false;
       isError.value = true;
       errorMessage.value = e.toString();
+
+      // ✅ Show popup for error speed too
+      Get.defaultDialog(
+        title: 'Error',
+        middleText:
+            'Failed in ${(stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(2)} seconds ❌\n\n$e',
+        textConfirm: 'Close',
+        onConfirm: () => Get.back(),
+      );
 
       Get.snackbar(
         'Error',
