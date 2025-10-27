@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controllers/menu_controller.dart' as  Menu;
+import '../controllers/menu_controller.dart' as Menu;
 import '../../../routes/app_routes.dart';
 
 class MenuView extends GetView<Menu.MenuController> {
@@ -13,6 +13,19 @@ class MenuView extends GetView<Menu.MenuController> {
         title: const Text('Daftar Menu'),
         centerTitle: true,
         actions: [
+          // 🔄 Tombol ganti implementasi
+          IconButton(
+            icon: const Icon(Icons.swap_horiz),
+            onPressed: () => controller.fetchMenuWithDetailCallback(),
+            tooltip: 'Switch to Callback Implementation',
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => controller.fetchMenuWithDetail(),
+            tooltip: 'Switch to Async-Await Implementation',
+          ),
+
+          // 🚪 Tombol logout
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
@@ -31,19 +44,12 @@ class MenuView extends GetView<Menu.MenuController> {
           ),
         ],
       ),
+
+      // ====== BODY ======
       body: Obx(() {
         // Loading state
         if (controller.isLoading.value) {
-          return const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Memuat data menu...'),
-              ],
-            ),
-          );
+          return _buildLoadingIndicator(context);
         }
 
         // Error state
@@ -103,117 +109,147 @@ class MenuView extends GetView<Menu.MenuController> {
           );
         }
 
-        // Success state - Show menu list
-        return RefreshIndicator(
-          onRefresh: controller.refreshData,
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: controller.listMenu.length,
-            itemBuilder: (context, index) {
-              final menu = controller.listMenu[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(12),
-                  leading: Hero(
-                    tag: 'menu-${menu.id}',
-                    child: Material(
-                      child: InkWell(
-                        onTap: () {
-                          // Tampilkan gambar full screen ketika di tap
-                          if (menu.gambar != null && menu.gambar!.isNotEmpty) {
-                            Get.to(() => Scaffold(
-                              appBar: AppBar(
-                                backgroundColor: Colors.black,
-                                leading: IconButton(
-                                  icon: const Icon(Icons.close, color: Colors.white),
-                                  onPressed: () => Get.back(),
-                                ),
+        // Success state
+        return Column(
+          children: [
+            // Daftar menu
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: controller.fetchMenuWithDetail,
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: controller.listMenu.length,
+                  itemBuilder: (context, index) {
+                    final menu = controller.listMenu[index];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.all(12),
+                        leading: Hero(
+                          tag: 'menu-${menu.id}',
+                          child: Material(
+                            child: InkWell(
+                              onTap: () {
+                                if (menu.gambar != null && menu.gambar!.isNotEmpty) {
+                                  Get.to(() => Scaffold(
+                                        appBar: AppBar(
+                                          backgroundColor: Colors.black,
+                                          leading: IconButton(
+                                            icon: const Icon(Icons.close, color: Colors.white),
+                                            onPressed: () => Get.back(),
+                                          ),
+                                        ),
+                                        backgroundColor: Colors.black,
+                                        body: Center(
+                                          child: InteractiveViewer(
+                                            child: Image.network(
+                                              menu.gambar!,
+                                              fit: BoxFit.contain,
+                                            ),
+                                          ),
+                                        ),
+                                      ));
+                                }
+                              },
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: menu.gambar != null && menu.gambar!.isNotEmpty
+                                    ? Image.network(
+                                        menu.gambar!,
+                                        width: 80,
+                                        height: 80,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return _buildFallbackIcon(context, menu.kategori);
+                                        },
+                                        loadingBuilder: (context, child, loadingProgress) {
+                                          if (loadingProgress == null) return child;
+                                          return _buildLoadingIndicator(context);
+                                        },
+                                      )
+                                    : _buildFallbackIcon(context, menu.kategori),
                               ),
-                              backgroundColor: Colors.black,
-                              body: Center(
-                                child: InteractiveViewer(
-                                  child: Image.network(
-                                    menu.gambar!,
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
+                            ),
+                          ),
+                        ),
+                        title: Text(
+                          menu.nama,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 4),
+                            Text(
+                              menu.deskripsi,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Chip(
+                              label: Text(
+                                menu.kategori,
+                                style: const TextStyle(fontSize: 11),
                               ),
-                            ));
-                          }
-                        },
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: menu.gambar != null && menu.gambar!.isNotEmpty
-                              ? Image.network(
-                                  menu.gambar!,
-                                  width: 80,
-                                  height: 80,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return _buildFallbackIcon(context, menu.kategori);
-                                  },
-                                  loadingBuilder: (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return _buildLoadingIndicator(context);
-                                  },
-                                )
-                              : _buildFallbackIcon(context, menu.kategori),
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                          ],
                         ),
-                      ),
-                    ),
-                  ),
-                  title: Text(
-                    menu.nama,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 4),
-                      Text(
-                        menu.deskripsi,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Chip(
-                        label: Text(
-                          menu.kategori,
-                          style: const TextStyle(fontSize: 11),
+                        trailing: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              'Rp ${_formatCurrency(menu.harga)}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          ],
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        // Klik item -> tampilkan detail
+                        onTap: () => controller.selectedMenu(menu),
                       ),
-                    ],
-                  ),
-                  trailing: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'Rp ${_formatCurrency(menu.harga)}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
+              ),
+            ),
+
+            // 🔍 Detail menu terpilih
+            if (controller.selectedMenu.value != null)
+              Container(
+                padding: const EdgeInsets.all(16),
+                color: Theme.of(context).colorScheme.surfaceVariant,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Detail Menu Terpilih',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text('Nama: ${controller.selectedMenu.value!.nama}'),
+                    Text('Harga: ${_formatCurrency(controller.selectedMenu.value!.harga)}'),
+                    Text('Kategori: ${controller.selectedMenu.value!.kategori}'),
+                    Text('Deskripsi: ${controller.selectedMenu.value!.deskripsi}'),
+                  ],
+                ),
+              ),
+          ],
         );
       }),
+
       floatingActionButton: Obx(() => controller.listMenu.isNotEmpty
           ? FloatingActionButton(
               onPressed: controller.refreshData,
@@ -222,6 +258,10 @@ class MenuView extends GetView<Menu.MenuController> {
           : const SizedBox.shrink()),
     );
   }
+
+  // =====================
+  // HELPER METHODS
+  // =====================
 
   IconData _getIconByCategory(String kategori) {
     switch (kategori.toLowerCase()) {
@@ -258,12 +298,14 @@ class MenuView extends GetView<Menu.MenuController> {
   }
 
   Widget _buildLoadingIndicator(BuildContext context) {
-    return Container(
-      width: 80,
-      height: 80,
-      color: Theme.of(context).colorScheme.primaryContainer,
-      child: const Center(
-        child: CircularProgressIndicator(),
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(),
+          SizedBox(height: 16),
+          Text('Memuat data menu...'),
+        ],
       ),
     );
   }

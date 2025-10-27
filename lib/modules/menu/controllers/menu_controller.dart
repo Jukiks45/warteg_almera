@@ -11,6 +11,7 @@ class MenuController extends GetxController {
   var listMenu = <MenuModel>[].obs;
   var filteredMenu = <MenuModel>[].obs;
   var selectedCategory = 'Semua'.obs;
+  var selectedMenu = Rxn<MenuModel>();
 
   // Daftar kategori untuk filter
   var categories = <String>[].obs;
@@ -18,25 +19,24 @@ class MenuController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchMenus();
+    fetchMenuWithDetail(); // Changed to use chained request
   }
 
-  /// Fetch data menu dari API
-  /// Gunakan salah satu metode: HTTP atau Dio
-  Future<void> fetchMenus() async {
-    final stopwatch = Stopwatch()..start(); // ⏱ Start timing
+  // Implementasi 1: Async-await untuk chained request
+  Future<void> fetchMenuWithDetail() async {
+    final stopwatch = Stopwatch()..start();
 
     try {
       isLoading.value = true;
       isError.value = false;
       errorMessage.value = '';
 
-      final raw = await _apiService.getMenuWithHttp();
-
-      stopwatch.stop(); // ⏱ Stop timing
+      final result = await _apiService.getMenuWithDetail();
+      
+      stopwatch.stop();
       final responseTime = stopwatch.elapsedMilliseconds / 1000;
 
-      // ✅ Show popup dialog with response time
+      // Show response time dialog
       Get.defaultDialog(
         title: 'Response Time',
         middleText: 'Loaded in ${responseTime.toStringAsFixed(2)} seconds ✅',
@@ -44,26 +44,25 @@ class MenuController extends GetxController {
         onConfirm: () => Get.back(),
       );
 
-      final menus = raw.map((json) => MenuModel.fromJson(json)).toList();
+      // Update state with results
+      listMenu.value = result['menuList'];
+      selectedMenu.value = result['selectedMenu'];
+      filteredMenu.value = List<MenuModel>.from(listMenu);
 
-      listMenu.value = menus;
-      filteredMenu.value = List<MenuModel>.from(menus);
-
-      final uniqueCategories =
-          menus.map((menu) => menu.kategori).toSet().toList();
+      // Update categories
+      final uniqueCategories = 
+          listMenu.map((menu) => menu.kategori).toSet().toList();
       categories.value = ['Semua', ...uniqueCategories];
 
-      isLoading.value = false;
     } catch (e) {
       stopwatch.stop();
-      isLoading.value = false;
       isError.value = true;
       errorMessage.value = e.toString();
 
-      // ✅ Show popup for error speed too
+      // Show error dialog
       Get.defaultDialog(
         title: 'Error',
-        middleText:
+        middleText: 
             'Failed in ${(stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(2)} seconds ❌\n\n$e',
         textConfirm: 'Close',
         onConfirm: () => Get.back(),
@@ -74,7 +73,67 @@ class MenuController extends GetxController {
         'Gagal memuat data menu: ${e.toString()}',
         snackPosition: SnackPosition.BOTTOM,
       );
+    } finally {
+      isLoading.value = false;
     }
+  }
+
+  // Implementasi 2: Callback untuk chained request
+  void fetchMenuWithDetailCallback() {
+    final stopwatch = Stopwatch()..start();
+    isLoading.value = true;
+    isError.value = false;
+    errorMessage.value = '';
+
+    _apiService.getMenuWithDetailCallback(
+      onSuccess: (result) {
+        stopwatch.stop();
+        
+        // Update state with results
+        listMenu.value = result['menuList'];
+        selectedMenu.value = result['selectedMenu'];
+        filteredMenu.value = List<MenuModel>.from(listMenu);
+
+        // Update categories
+        final uniqueCategories = 
+            listMenu.map((menu) => menu.kategori).toSet().toList();
+        categories.value = ['Semua', ...uniqueCategories];
+
+        // Show success dialog
+        Get.defaultDialog(
+          title: 'Response Time',
+          middleText: 
+              'Loaded in ${(stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(2)} seconds ✅',
+          textConfirm: 'Close',
+          onConfirm: () => Get.back(),
+        );
+
+        isLoading.value = false;
+      },
+      onError: (error) {
+        stopwatch.stop();
+        
+        isError.value = true;
+        errorMessage.value = error;
+
+        // Show error dialog
+        Get.defaultDialog(
+          title: 'Error',
+          middleText: 
+              'Failed in ${(stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(2)} seconds ❌\n\n$error',
+          textConfirm: 'Close',
+          onConfirm: () => Get.back(),
+        );
+
+        Get.snackbar(
+          'Error',
+          'Gagal memuat data menu: $error',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+
+        isLoading.value = false;
+      },
+    );
   }
 
   /// Filter menu berdasarkan kategori
@@ -91,11 +150,11 @@ class MenuController extends GetxController {
 
   /// Refresh data menu
   Future<void> refreshMenus() async {
-    await fetchMenus();
+    await fetchMenuWithDetail(); // Changed to use chained request
   }
 
   /// Backwards-compatible API used by views
   Future<void> refreshData() async {
-    await fetchMenus();
+    await fetchMenuWithDetail(); // Changed to use chained request
   }
 }

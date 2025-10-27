@@ -1,15 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
+import '../modules/menu/models/menu_model.dart';
 
 class ApiService {
-  // Base URL should be the API root. Keep endpoints separate to avoid
-  // accidental duplication like .../menu/menu when combining baseUrl+endpoint.
-  static const String baseUrl =
-      'https://68fce98b96f6ff19b9f6afe8.mockapi.io/Almera';
+  static const String baseUrl = 'https://68fce98b96f6ff19b9f6afe8.mockapi.io/Almera';
   static const String menuEndpoint = '/menu';
 
-  // Metode 1: Menggunakan package http
+  // Metode 1: Menggunakan async-await dengan HTTP
   Future<List<dynamic>> getMenuWithHttp() async {
     try {
       final response = await http.get(
@@ -19,17 +17,11 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-
-        // Some APIs return a top-level list, others wrap the list in a map
-        // under the 'data' key. Handle both cases to be robust.
-        if (data is List) {
-          return data;
-        } else if (data is Map && data.containsKey('data')) {
+        if (data is List) return data;
+        if (data is Map && data.containsKey('data')) {
           final inner = data['data'];
           if (inner is List) return inner;
         }
-
-        // If structure is unexpected, return empty list with clear message
         return [];
       } else {
         throw Exception('Gagal memuat menu: ${response.statusCode}');
@@ -39,7 +31,7 @@ class ApiService {
     }
   }
 
-  // Metode 2: Menggunakan package dio
+  // Metode 2: Menggunakan async-await dengan Dio
   Future<List<dynamic>> getMenuWithDio() async {
     try {
       final dio = Dio(BaseOptions(
@@ -48,7 +40,6 @@ class ApiService {
         receiveTimeout: const Duration(seconds: 3),
       ));
 
-      // ✅ Add this part for logging
       dio.interceptors.add(LogInterceptor(
         request: true,
         requestHeader: true,
@@ -62,13 +53,11 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final data = response.data;
-
         if (data is List) return data;
         if (data is Map && data.containsKey('data')) {
           final inner = data['data'];
           if (inner is List) return inner;
         }
-
         return [];
       } else {
         throw Exception('Gagal memuat menu: ${response.statusCode}');
@@ -83,6 +72,89 @@ class ApiService {
       }
     } catch (e) {
       throw Exception('Error saat mengambil data: $e');
+    }
+  }
+
+  // Implementasi 1: Chained Request dengan async-await
+  Future<Map<String, dynamic>> getMenuWithDetail() async {
+    try {
+      // First API call - get menu list
+      final menuList = await getMenuWithDio();
+      final List<MenuModel> menus = menuList
+          .map((item) => MenuModel.fromJson(item))
+          .toList();
+
+      // Second API call - get detail for first menu
+      if (menus.isNotEmpty) {
+        final detailResponse = await Dio().get('$baseUrl$menuEndpoint/${menus[0].id}');
+        if (detailResponse.statusCode == 200) {
+          final menuDetail = MenuModel.fromJson(detailResponse.data);
+          return {
+            'menuList': menus,
+            'selectedMenu': menuDetail,
+          };
+        }
+      }
+
+      return {
+        'menuList': menus,
+        'selectedMenu': null,
+      };
+    } catch (e) {
+      throw Exception('Error in chained request: $e');
+    }
+  }
+
+  // Implementasi 2: Chained Request dengan callback
+  void getMenuWithDetailCallback({
+    required Function(Map<String, dynamic>) onSuccess,
+    required Function(String) onError,
+  }) {
+    getMenuWithDio().then((menuList) {
+      try {
+        final menus = menuList
+            .map((item) => MenuModel.fromJson(item))
+            .toList();
+        
+        if (menus.isNotEmpty) {
+          Dio().get('$baseUrl$menuEndpoint/${menus[0].id}')
+              .then((detailResponse) {
+            if (detailResponse.statusCode == 200) {
+              final menuDetail = MenuModel.fromJson(detailResponse.data);
+              onSuccess({
+                'menuList': menus,
+                'selectedMenu': menuDetail,
+              });
+            } else {
+              onError('Failed to get menu detail: ${detailResponse.statusCode}');
+            }
+          }).catchError((error) {
+            onError('Error getting menu detail: $error');
+          });
+        } else {
+          onSuccess({
+            'menuList': menus,
+            'selectedMenu': null,
+          });
+        }
+      } catch (e) {
+        onError('Error processing menu data: $e');
+      }
+    }).catchError((error) {
+      onError('Error getting menu list: $error');
+    });
+  }
+
+  // Helper method untuk mendapatkan detail menu by ID
+  Future<MenuModel?> getMenuDetail(int id) async {
+    try {
+      final response = await Dio().get('$baseUrl$menuEndpoint/$id');
+      if (response.statusCode == 200) {
+        return MenuModel.fromJson(response.data);
+      }
+      return null;
+    } catch (e) {
+      throw Exception('Error getting menu detail: $e');
     }
   }
 }
