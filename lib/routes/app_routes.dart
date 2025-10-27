@@ -1,4 +1,4 @@
 abstract class AppRoutes {
-  static const LOGIN = '/login';
-  static const MENU = '/menu';
+  static const login = '/login';
+  static const menu = '/menu';
 }

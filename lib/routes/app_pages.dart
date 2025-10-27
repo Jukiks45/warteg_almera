@@ -8,12 +8,12 @@ import 'app_routes.dart';
 class AppPages {
   static final routes = [
     GetPage(
-      name: AppRoutes.LOGIN,
+      name: AppRoutes.login,
       page: () => const LoginView(),
       binding: LoginBinding(),
     ),
     GetPage(
-      name: AppRoutes.MENU,
+      name: AppRoutes.menu,
       page: () => const MenuView(),
       binding: MenuBinding(),
     ),

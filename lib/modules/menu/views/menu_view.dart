@@ -2,11 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controllers/menu_controller.dart' as Menu;
+import '../controllers/menu_controller.dart' as menu;
 import '../models/menu_model.dart'; // Wajib ada
 import '../../../routes/app_routes.dart';
 
-class MenuView extends GetView<Menu.MenuController> {
+class MenuView extends GetView<menu.MenuController> {
   const MenuView({super.key});
 
   @override
@@ -38,7 +38,7 @@ class MenuView extends GetView<Menu.MenuController> {
                 confirmTextColor: Colors.white,
                 onConfirm: () {
                   Get.back();
-                  Get.offAllNamed(AppRoutes.LOGIN);
+                  Get.offAllNamed(AppRoutes.login);
                 },
               );
             },
@@ -175,7 +175,7 @@ class MenuView extends GetView<Menu.MenuController> {
       margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.4),
+        color: Theme.of(context).colorScheme.primaryContainer.withAlpha(102),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Theme.of(context).colorScheme.primary, width: 1.5),
       ),

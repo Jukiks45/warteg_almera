@@ -58,7 +58,7 @@ class LoginController extends GetxController {
       );
 
       // Navigasi ke halaman menu dan hapus halaman login dari tumpukan
-      Get.offNamed(AppRoutes.MENU);
+      Get.offNamed(AppRoutes.menu);
     } else {
       isLoading.value = false;
       
