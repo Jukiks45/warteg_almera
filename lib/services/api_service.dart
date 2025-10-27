@@ -5,7 +5,8 @@ import 'package:dio/dio.dart';
 class ApiService {
   // Base URL should be the API root. Keep endpoints separate to avoid
   // accidental duplication like .../menu/menu when combining baseUrl+endpoint.
-  static const String baseUrl = 'https://68fce98b96f6ff19b9f6afe8.mockapi.io/Almera';
+  static const String baseUrl =
+      'https://68fce98b96f6ff19b9f6afe8.mockapi.io/Almera';
   static const String menuEndpoint = '/menu';
 
   // Metode 1: Menggunakan package http
@@ -45,6 +46,16 @@ class ApiService {
         baseUrl: baseUrl,
         connectTimeout: const Duration(seconds: 5),
         receiveTimeout: const Duration(seconds: 3),
+      ));
+
+      // ✅ Add this part for logging
+      dio.interceptors.add(LogInterceptor(
+        request: true,
+        requestHeader: true,
+        requestBody: true,
+        responseHeader: true,
+        responseBody: true,
+        error: true,
       ));
 
       final response = await dio.get(menuEndpoint);

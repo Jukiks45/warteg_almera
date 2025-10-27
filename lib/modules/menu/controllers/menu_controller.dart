@@ -2,7 +2,6 @@ import 'package:get/get.dart';
 import '../models/menu_model.dart';
 import '../../../services/api_service.dart';
 
-
 class MenuController extends GetxController {
   final ApiService _apiService = Get.find<ApiService>();
 
@@ -12,8 +11,7 @@ class MenuController extends GetxController {
   var listMenu = <MenuModel>[].obs;
   var filteredMenu = <MenuModel>[].obs;
   var selectedCategory = 'Semua'.obs;
-  
-  
+
   // Daftar kategori untuk filter
   var categories = <String>[].obs;
 
@@ -30,28 +28,26 @@ class MenuController extends GetxController {
       isLoading.value = true;
       isError.value = false;
       errorMessage.value = '';
-    // Pilih salah satu metode pada ApiService (default: http)
-    final raw = await _apiService.getMenuWithHttp();
+      // Pilih salah satu metode pada ApiService (default: http)
+      final raw = await _apiService.getMenuWithDio();
 
-    // Map JSON -> MenuModel
-    final menus = raw.map((json) => MenuModel.fromJson(json)).toList();
+      // Map JSON -> MenuModel
+      final menus = raw.map((json) => MenuModel.fromJson(json)).toList();
 
-    listMenu.value = menus;
-    filteredMenu.value = List<MenuModel>.from(menus);
+      listMenu.value = menus;
+      filteredMenu.value = List<MenuModel>.from(menus);
 
-    // Extract unique categories (model uses 'kategori')
-    final uniqueCategories = menus
-      .map((menu) => menu.kategori)
-      .toSet()
-      .toList();
-    categories.value = ['Semua', ...uniqueCategories];
+      // Extract unique categories (model uses 'kategori')
+      final uniqueCategories =
+          menus.map((menu) => menu.kategori).toSet().toList();
+      categories.value = ['Semua', ...uniqueCategories];
 
       isLoading.value = false;
     } catch (e) {
       isLoading.value = false;
       isError.value = true;
       errorMessage.value = e.toString();
-      
+
       Get.snackbar(
         'Error',
         'Gagal memuat data menu: ${e.toString()}',
@@ -63,13 +59,12 @@ class MenuController extends GetxController {
   /// Filter menu berdasarkan kategori
   void filterByCategory(String category) {
     selectedCategory.value = category;
-    
+
     if (category == 'Semua') {
       filteredMenu.value = List<MenuModel>.from(listMenu);
     } else {
-      filteredMenu.value = listMenu
-          .where((menu) => menu.kategori == category)
-          .toList();
+      filteredMenu.value =
+          listMenu.where((menu) => menu.kategori == category).toList();
     }
   }
 
