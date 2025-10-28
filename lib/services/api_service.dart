@@ -12,12 +12,28 @@ class ApiService {
   // HTTP - Async-Await
   // ===========================
   Future<Map<String, dynamic>> getMenuWithDetailHttp() async {
+    final urlMenu = Uri.parse('$baseUrl$menuEndpoint');
+
     try {
+      final startTimeMenu = DateTime.now();
+
+      print('📤 HTTP REQUEST [Menu List]');
+      print('➡ URL: $urlMenu');
+      print('➡ Headers: {Content-Type: application/json}');
+
       // First API call - get menu list
       final response = await http.get(
-        Uri.parse('$baseUrl$menuEndpoint'),
+        urlMenu,
         headers: {'Content-Type': 'application/json'},
       );
+
+      final endTimeMenu = DateTime.now();
+      final durationMenu = endTimeMenu.difference(startTimeMenu).inMilliseconds;
+
+      print('\n📥 HTTP RESPONSE [Menu List]');
+      print('✅ Status Code: ${response.statusCode}');
+      print('⏱ Duration: ${durationMenu / 1000} seconds');
+      // print('📦 Body: ${response.body}'); // Opsional: tampilkan body
 
       if (response.statusCode != 200) {
         throw Exception('Gagal memuat menu: ${response.statusCode}');
@@ -38,10 +54,27 @@ class ApiService {
       // Second API call - get detail for first menu
       MenuModel? menuDetail;
       if (menus.isNotEmpty) {
+        final urlDetail = Uri.parse('$baseUrl$menuEndpoint/${menus[0].id}');
+        final startTimeDetail = DateTime.now();
+
+        print('\n\n📤 HTTP REQUEST [Menu Detail]');
+        print('➡ URL: $urlDetail');
+        print('➡ Headers: {Content-Type: application/json}');
+
         final detailResponse = await http.get(
-          Uri.parse('$baseUrl$menuEndpoint/${menus[3].id}'),
+          urlDetail,
           headers: {'Content-Type': 'application/json'},
         );
+
+        final endTimeDetail = DateTime.now();
+        final durationDetail =
+            endTimeDetail.difference(startTimeDetail).inMilliseconds;
+
+        print('\n📥 HTTP RESPONSE [Menu Detail]');
+        print('✅ Status Code: ${detailResponse.statusCode}');
+        print('⏱ Duration: ${durationDetail / 1000} seconds');
+        // print('📦 Body: ${detailResponse.body}'); // Opsional: tampilkan body
+
         if (detailResponse.statusCode == 200) {
           final detailData = json.decode(detailResponse.body);
           menuDetail = MenuModel.fromJson(detailData);
@@ -53,6 +86,7 @@ class ApiService {
         'selectedMenu': menuDetail,
       };
     } catch (e) {
+      print('❌ HTTP ERROR: $e');
       throw Exception('Error in HTTP chained request: $e');
     }
   }
@@ -64,8 +98,23 @@ class ApiService {
     required Function(Map<String, dynamic>) onSuccess,
     required Function(String) onError,
   }) {
-    http.get(Uri.parse('$baseUrl$menuEndpoint'),
-        headers: {'Content-Type': 'application/json'}).then((response) {
+    final urlMenu = Uri.parse('$baseUrl$menuEndpoint');
+    final startTimeMenu = DateTime.now();
+
+    print('📤 HTTP REQUEST [Menu List - Callback]');
+    print('➡ URL: $urlMenu');
+    print('➡ Headers: {Content-Type: application/json}');
+
+    http.get(urlMenu, headers: {'Content-Type': 'application/json'}).then(
+        (response) {
+      final endTimeMenu = DateTime.now();
+      final durationMenu = endTimeMenu.difference(startTimeMenu).inMilliseconds;
+
+      print('\n📥 HTTP RESPONSE [Menu List - Callback]');
+      print('✅ Status Code: ${response.statusCode}');
+      print('⏱ Duration: ${durationMenu / 1000} seconds');
+      // print('📦 Body: ${response.body}'); // Opsional: tampilkan body
+
       if (response.statusCode != 200) {
         onError('Failed to get menu list: ${response.statusCode}');
         return;
@@ -85,9 +134,25 @@ class ApiService {
             menusData.map((item) => MenuModel.fromJson(item)).toList();
 
         if (menus.isNotEmpty) {
-          http.get(Uri.parse('$baseUrl$menuEndpoint/${menus[3].id}'), headers: {
+          final urlDetail = Uri.parse('$baseUrl$menuEndpoint/${menus[0].id}');
+          final startTimeDetail = DateTime.now();
+
+          print('\n\n📤 HTTP REQUEST [Menu Detail - Callback]');
+          print('➡ URL: $urlDetail');
+          print('➡ Headers: {Content-Type: application/json}');
+
+          http.get(urlDetail, headers: {
             'Content-Type': 'application/json'
           }).then((detailResponse) {
+            final endTimeDetail = DateTime.now();
+            final durationDetail =
+                endTimeDetail.difference(startTimeDetail).inMilliseconds;
+
+            print('\n📥 HTTP RESPONSE [Menu Detail - Callback]');
+            print('✅ Status Code: ${detailResponse.statusCode}');
+            print('⏱ Duration: ${durationDetail / 1000} seconds');
+            // print('📦 Body: ${detailResponse.body}'); // Opsional: tampilkan body
+
             if (detailResponse.statusCode == 200) {
               final detailData = json.decode(detailResponse.body);
               final menuDetail = MenuModel.fromJson(detailData);
@@ -109,6 +174,7 @@ class ApiService {
         onError('Error processing menu list: $e');
       }
     }).catchError((e) {
+      print('❌ HTTP ERROR: $e');
       onError('Error getting menu list: $e');
     });
   }
@@ -166,7 +232,6 @@ class ApiService {
     required Function(Map<String, dynamic>) onSuccess,
     required Function(String) onError,
   }) {
-
     final dio = Dio();
     dio.interceptors.add(LogInterceptor(
       request: true,
