@@ -14,45 +14,32 @@ import 'services/supabase_service.dart';
 import 'modules/menu/models/menu_model.dart';
 import 'modules/cart/models/cart_item_model.dart';
 
-// FUNGSI BARU UNTUK INISIALISASI SEMUA SERVICE
+// controllers
+import 'modules/cart/controllers/cart_controller.dart'; 
+
 Future<void> initServices() async {
   debugPrint("--- Memulai inisialisasi service ---");
 
-  // Load .env
-  try {
-    await dotenv.load(fileName: ".env");
-    debugPrint(">>> .env berhasil dimuat");
-  } catch (e) {
-    debugPrint(">>> GAGAL memuat .env: $e");
-  }
+  // Kode ori Anda untuk .env dan Supabase
+  await dotenv.load(fileName: ".env");
+  await SupabaseService().init();
 
-  // Init Local Storage (Hive)
+  // Inisialisasi Hive dengan penanganan error
   try {
-    // 1. Inisialisasi Hive-nya dulu
-    await LocalStorageService().init(); // Ini menjalankan Hive.initFlutter()
-    debugPrint(">>> Hive berhasil diinisialisasi");
-
-    // 2. Daftarkan semua adapter
+    await LocalStorageService().init();
     Hive.registerAdapter(MenuModelAdapter());
     Hive.registerAdapter(CartItemModelAdapter());
-    debugPrint(">>> Adapter Hive berhasil didaftarkan");
-
-    // 3. BUKA BOX-NYA DAN DAFTARKAN KE GetX (LANGKAH KUNCI)
+    
     final cartBox = await Hive.openBox<CartItemModel>('cart_items');
-    Get.put(cartBox, permanent: true); // Daftarkan 'cartBox' sebagai dependensi global
-    debugPrint(">>> Box Keranjang ('cart_items') berhasil dibuka dan di-inject ke GetX");
+    Get.put(cartBox, permanent: true); 
+    debugPrint(">>> Box Keranjang ('cart_items') berhasil dibuka.");
+
+    Get.put(CartController(), permanent: true);
+    debugPrint(">>> CartController berhasil dibuat dan siap digunakan.");
 
   } catch (e, st) {
     debugPrint(">>> GAGAL setup LocalStorage atau Hive: $e");
     debugPrint(st.toString());
-  }
-
-  // Init Supabase
-  try {
-    await SupabaseService().init();
-    debugPrint(">>> Supabase berhasil diinisialisasi");
-  } catch (e) {
-    debugPrint(">>> GAGAL inisialisasi Supabase: $e");
   }
   
   debugPrint("--- Inisialisasi service selesai ---");
@@ -60,11 +47,7 @@ Future<void> initServices() async {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Tunggu semua service selesai SEBELUM menjalankan UI
   await initServices();
-
-  // Jalankan UI
   runApp(const MyApp());
 }
 
