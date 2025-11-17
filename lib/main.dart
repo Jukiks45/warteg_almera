@@ -10,52 +10,61 @@ import 'routes/app_routes.dart';
 import 'services/local_storage_service.dart';
 import 'services/supabase_service.dart';
 
-// --- IMPORT MODEL UNTUK HIVE ---
+// models
 import 'modules/menu/models/menu_model.dart';
 import 'modules/cart/models/cart_item_model.dart';
-// --------------------------------
+
+// FUNGSI BARU UNTUK INISIALISASI SEMUA SERVICE
+Future<void> initServices() async {
+  debugPrint("--- Memulai inisialisasi service ---");
+
+  // Load .env
+  try {
+    await dotenv.load(fileName: ".env");
+    debugPrint(">>> .env berhasil dimuat");
+  } catch (e) {
+    debugPrint(">>> GAGAL memuat .env: $e");
+  }
+
+  // Init Local Storage (Hive)
+  try {
+    // 1. Inisialisasi Hive-nya dulu
+    await LocalStorageService().init(); // Ini menjalankan Hive.initFlutter()
+    debugPrint(">>> Hive berhasil diinisialisasi");
+
+    // 2. Daftarkan semua adapter
+    Hive.registerAdapter(MenuModelAdapter());
+    Hive.registerAdapter(CartItemModelAdapter());
+    debugPrint(">>> Adapter Hive berhasil didaftarkan");
+
+    // 3. BUKA BOX-NYA DAN DAFTARKAN KE GetX (LANGKAH KUNCI)
+    final cartBox = await Hive.openBox<CartItemModel>('cart_items');
+    Get.put(cartBox, permanent: true); // Daftarkan 'cartBox' sebagai dependensi global
+    debugPrint(">>> Box Keranjang ('cart_items') berhasil dibuka dan di-inject ke GetX");
+
+  } catch (e, st) {
+    debugPrint(">>> GAGAL setup LocalStorage atau Hive: $e");
+    debugPrint(st.toString());
+  }
+
+  // Init Supabase
+  try {
+    await SupabaseService().init();
+    debugPrint(">>> Supabase berhasil diinisialisasi");
+  } catch (e) {
+    debugPrint(">>> GAGAL inisialisasi Supabase: $e");
+  }
+  
+  debugPrint("--- Inisialisasi service selesai ---");
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // --- LOAD .ENV ---
-  try {
-    await dotenv.load(fileName: ".env");
-    debugPrint(">>> .env loaded");
-  } catch (e, st) {
-    debugPrint(">>> FAILED to load .env: $e");
-    debugPrint(st.toString());
-  }
+  // Tunggu semua service selesai SEBELUM menjalankan UI
+  await initServices();
 
-  // --- INIT LOCAL STORAGE & SETUP HIVE MODELS ---
-  try {
-    // Service Anda sudah menjalankan Hive.initFlutter()
-    await LocalStorageService().init();
-    debugPrint(">>> LocalStorage initialized");
-
-    // Daftarkan adapter setelah Hive diinisialisasi
-    Hive.registerAdapter(MenuModelAdapter());
-    Hive.registerAdapter(CartItemModelAdapter()); // <-- Ini sekarang tidak akan error
-
-    // Buka box (database) untuk menyimpan item keranjang
-    await Hive.openBox<CartItemModel>('cart_items');
-    debugPrint(">>> Hive Adapters registered and Cart Box opened");
-
-  } catch (e, st) {
-    debugPrint(">>> FAILED LocalStorage or Hive setup: $e");
-    debugPrint(st.toString());
-  }
-
-  // --- INIT SUPABASE ---
-  try {
-    await SupabaseService().init();
-    debugPrint(">>> Supabase initialized");
-  } catch (e, st) {
-    debugPrint(">>> FAILED Supabase init: $e");
-    debugPrint(st.toString());
-  }
-
-  // --- RUN UI (TIDAK DIUBAH) ---
+  // Jalankan UI
   runApp(const MyApp());
 }
 
