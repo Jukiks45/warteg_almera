@@ -19,6 +19,12 @@ class MenuView extends GetView<menu.MenuController> {
         title: const Text('Daftar Menu'),
         centerTitle: true,
         actions: [
+          // Order History Icon
+          IconButton(
+            icon: const Icon(Icons.receipt_long),
+            onPressed: () => Get.toNamed(AppRoutes.orderHistory),
+            tooltip: 'Riwayat Pesanan',
+          ),
           // Cart Icon with Badge
           Obx(() => Stack(
                 children: [
