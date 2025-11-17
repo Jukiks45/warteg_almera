@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/login_controller.dart'; // UPDATED
+import '../../../routes/app_routes.dart';
 
 class LoginView extends GetView<LoginController> {
   const LoginView({super.key});
@@ -151,7 +152,7 @@ class LoginView extends GetView<LoginController> {
                   // REGISTER LINK
                   TextButton(
                     onPressed: () {
-                      Get.toNamed('/register');
+                      Get.toNamed(AppRoutes.register);
                     },
                     child: Text(
                       "Belum punya akun? Daftar",

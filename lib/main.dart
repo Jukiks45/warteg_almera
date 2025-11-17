@@ -13,8 +13,8 @@ import 'services/auth_session_service.dart';
 import 'providers/login_providers.dart';
 
 // models for Hive
-import 'modules/menu/models/menu_model.dart';
 import 'modules/cart/models/cart_item_model.dart';
+import 'modules/cart/models/cart_item_adapter.dart';
 
 // controllers
 import 'modules/cart/controllers/cart_controller.dart';
@@ -59,14 +59,10 @@ Future<void> initServices() async {
     await Get.putAsync(() => LocalStorageService().init());
     debugPrint("✅ LocalStorageService initialized.");
     
-    // Register Hive adapters for cart and menu
-    if (!Hive.isAdapterRegistered(MenuModelAdapter().typeId)) {
-      Hive.registerAdapter(MenuModelAdapter());
-      debugPrint("✅ MenuModelAdapter registered.");
-    }
-    if (!Hive.isAdapterRegistered(CartItemModelAdapter().typeId)) {
-      Hive.registerAdapter(CartItemModelAdapter());
-      debugPrint("✅ CartItemModelAdapter registered.");
+    // Register Hive adapter for cart items
+    if (!Hive.isAdapterRegistered(CartItemAdapter().typeId)) {
+      Hive.registerAdapter(CartItemAdapter());
+      debugPrint("✅ CartItemAdapter registered.");
     }
     
     // Open cart box and register CartController
