@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../routes/app_routes.dart';
 import '/providers/login_providers.dart';
 
@@ -9,15 +10,7 @@ class LoginController extends GetxController {
   // --- Login Controllers ---
   final usernameController = TextEditingController(); // email sebenarnya
   final passwordController = TextEditingController();
-
-  // --- Register Controllers ---
-  final regEmailController = TextEditingController();
-  final regUsernameController =
-      TextEditingController(); // optional, for your DB
-  final regPasswordController = TextEditingController();
-  final regConfirmPasswordController = TextEditingController();
-
-  // UI State
+  
   var isLoading = false.obs;
   var obscurePassword = true.obs;
   var obscureRegisterPassword = true.obs;
@@ -68,67 +61,48 @@ class LoginController extends GetxController {
       isLoading.value = false;
       _error(e.toString().replaceAll("Exception: ", ""));
     }
-  }
 
-  // ---------------------------------------------------------------------------
-  //                                 REGISTER
-  // ---------------------------------------------------------------------------
-  Future<void> register() async {
-    final email = regEmailController.text.trim();
-    final username = regUsernameController.text.trim();
-    final password = regPasswordController.text.trim();
-    final confirmPassword = regConfirmPasswordController.text.trim();
+    if (password.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Password tidak boleh kosong',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
 
-    if (email.isEmpty) return _error("Email tidak boleh kosong");
-    if (!email.contains("@")) return _error("Format email tidak valid");
-    if (username.isEmpty) return _error("Username tidak boleh kosong");
-    if (password.isEmpty) return _error("Password tidak boleh kosong");
-    if (password.length < 6) return _error("Password minimal 6 karakter");
-    if (confirmPassword.isEmpty)
-      return _error("Konfirmasi password harus diisi");
-    if (password != confirmPassword)
-      return _error("Password dan konfirmasi tidak sama");
-
+    // Simulasi proses login
     isLoading.value = true;
 
-    try {
-      final user = await _provider.register(email, password);
+    await Future.delayed(const Duration(seconds: 2));
 
+    // Simulasi validasi (username: admin, password: admin123)
+    if (username == 'admin' && password == 'admin123') {
       isLoading.value = false;
+      
+      Get.snackbar(
+        'Sukses',
+        'Login berhasil!',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
 
-      if (user != null) {
-        _success("Registrasi berhasil! Silakan login.");
-        Get.back();
-      } else {
-        _error("Registrasi gagal. Coba lagi.");
-      }
-    } catch (e) {
+      // Navigasi ke halaman menu dan hapus halaman login dari tumpukan
+      Get.offNamed(AppRoutes.menu);
+    } else {
       isLoading.value = false;
-      _error(e.toString().replaceAll("Exception: ", ""));
+      
+      Get.snackbar(
+        'Error',
+        'Username atau password salah',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
-  }
-
-  // ---------------------------------------------------------------------------
-  //                              Snackbars
-  // ---------------------------------------------------------------------------
-  void _error(String message) {
-    Get.snackbar(
-      "Error",
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
-    );
-  }
-
-  void _success(String message) {
-    Get.snackbar(
-      "Sukses",
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-    );
   }
 
   @override
