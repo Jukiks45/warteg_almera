@@ -14,12 +14,17 @@ class MenuView extends GetView<menu.MenuController> {
   @override
   Widget build(BuildContext context) {
     final cartController = Get.find<CartController>();
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Daftar Menu'),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.receipt_long),
+            onPressed: () => Get.toNamed(AppRoutes.orderHistory),
+            tooltip: 'Riwayat Pesanan',
+          ),
           // Cart Icon with Badge
           Obx(() => Stack(
                 children: [
@@ -62,8 +67,7 @@ class MenuView extends GetView<menu.MenuController> {
           ),
           IconButton(
             icon: const Icon(Icons.swap_horiz),
-            onPressed: () =>
-                controller.fetchMenuWithDetailCallbackHttp(),
+            onPressed: () => controller.fetchMenuWithDetailCallbackHttp(),
             tooltip: 'Reload Callback Chaining',
           ),
           IconButton(
@@ -77,13 +81,13 @@ class MenuView extends GetView<menu.MenuController> {
                 confirmTextColor: Colors.white,
                 onConfirm: () async {
                   Get.back();
-                  
+
                   // Logout dari Supabase dan hapus session
                   final loginProvider = Get.find<LoginProviders>();
                   await loginProvider.logout();
-                  
+
                   Get.offAllNamed(AppRoutes.login);
-                  
+
                   Get.snackbar(
                     'Sukses',
                     'Anda telah logout',
@@ -119,7 +123,7 @@ class MenuView extends GetView<menu.MenuController> {
               children: [
                 // === MENU PILIHAN BARU (Menggunakan selectedMenu) ===
                 _buildSelectedMenuCard(context, controller.selectedMenu.value),
-                
+
                 Padding(
                   padding: const EdgeInsets.only(left: 16, top: 16, bottom: 8),
                   child: Text(
@@ -133,7 +137,8 @@ class MenuView extends GetView<menu.MenuController> {
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(), // Wajib
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     mainAxisSpacing: 12,
@@ -156,15 +161,19 @@ class MenuView extends GetView<menu.MenuController> {
                               child: ClipRRect(
                                 borderRadius: const BorderRadius.vertical(
                                     top: Radius.circular(12)),
-                                child: menu.gambar != null && menu.gambar!.isNotEmpty
+                                child: menu.gambar != null &&
+                                        menu.gambar!.isNotEmpty
                                     ? Image.network(
                                         menu.gambar!,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return _buildFallbackIcon(context, menu.kategori);
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                          return _buildFallbackIcon(
+                                              context, menu.kategori);
                                         },
                                       )
-                                    : _buildFallbackIcon(context, menu.kategori),
+                                    : _buildFallbackIcon(
+                                        context, menu.kategori),
                               ),
                             ),
                             Padding(
@@ -174,8 +183,8 @@ class MenuView extends GetView<menu.MenuController> {
                                 children: [
                                   Text(
                                     menu.nama,
-                                    style:
-                                        const TextStyle(fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -184,7 +193,9 @@ class MenuView extends GetView<menu.MenuController> {
                                     'Rp ${_formatCurrency(menu.harga)}',
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: Theme.of(context).colorScheme.primary),
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary),
                                   ),
                                   const SizedBox(height: 4),
                                   Chip(
@@ -192,8 +203,8 @@ class MenuView extends GetView<menu.MenuController> {
                                       menu.kategori,
                                       style: const TextStyle(fontSize: 11),
                                     ),
-                                    padding:
-                                        const EdgeInsets.symmetric(horizontal: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 4),
                                     materialTapTargetSize:
                                         MaterialTapTargetSize.shrinkWrap,
                                   ),
@@ -206,7 +217,8 @@ class MenuView extends GetView<menu.MenuController> {
                     );
                   },
                 ),
-                const SizedBox(height: 20), // Memberi sedikit jarak di bawah Grid
+                const SizedBox(
+                    height: 20), // Memberi sedikit jarak di bawah Grid
               ],
             ),
           ),
@@ -229,7 +241,8 @@ class MenuView extends GetView<menu.MenuController> {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer.withAlpha(102),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).colorScheme.primary, width: 1.5),
+        border: Border.all(
+            color: Theme.of(context).colorScheme.primary, width: 1.5),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,13 +250,14 @@ class MenuView extends GetView<menu.MenuController> {
           // Gambar Menu Pilihan
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: selectedMenu.gambar != null && selectedMenu.gambar!.isNotEmpty
+            child: selectedMenu.gambar != null &&
+                    selectedMenu.gambar!.isNotEmpty
                 ? Image.network(
                     selectedMenu.gambar!,
                     width: 80,
                     height: 80,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => 
+                    errorBuilder: (context, error, stackTrace) =>
                         _buildFallbackIconSmall(context, selectedMenu.kategori),
                   )
                 : _buildFallbackIconSmall(context, selectedMenu.kategori),
@@ -256,7 +270,10 @@ class MenuView extends GetView<menu.MenuController> {
               children: [
                 const Text(
                   '★ MENU PILIHAN',
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.red),
+                  style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red),
                 ),
                 Text(
                   selectedMenu.nama,
@@ -295,7 +312,7 @@ class MenuView extends GetView<menu.MenuController> {
   // =====================
   void _showMenuDetail(BuildContext context, MenuModel menu) {
     final cartController = Get.find<CartController>();
-    
+
     Get.defaultDialog(
       title: menu.nama,
       content: Column(
@@ -304,8 +321,8 @@ class MenuView extends GetView<menu.MenuController> {
         children: [
           if (menu.gambar != null && menu.gambar!.isNotEmpty)
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(menu.gambar!, fit: BoxFit.cover)),
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(menu.gambar!, fit: BoxFit.cover)),
           const SizedBox(height: 8),
           Text('Harga: Rp ${_formatCurrency(menu.harga)}'),
           Text('Kategori: ${menu.kategori}'),
@@ -336,7 +353,7 @@ class MenuView extends GetView<menu.MenuController> {
   // =====================
   // HELPER METHODS
   // =====================
-  
+
   // Helper khusus untuk gambar kecil di Selected Menu Card
   Widget _buildFallbackIconSmall(BuildContext context, String kategori) {
     return Container(
@@ -385,7 +402,7 @@ class MenuView extends GetView<menu.MenuController> {
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: controller.fetchMenuWithDetailHttp, 
+            onPressed: controller.fetchMenuWithDetailHttp,
             icon: const Icon(Icons.refresh),
             label: const Text('Coba Lagi'),
           ),
@@ -407,7 +424,7 @@ class MenuView extends GetView<menu.MenuController> {
       ),
     );
   }
-  
+
   Widget _buildFallbackIcon(BuildContext context, String kategori) {
     return Container(
       width: double.infinity,
