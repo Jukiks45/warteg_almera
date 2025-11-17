@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../routes/app_routes.dart';
+import '../../../services/auth_session_service.dart';
 import '/providers/login_providers.dart';
 
 class LoginController extends GetxController {
@@ -59,6 +60,13 @@ class LoginController extends GetxController {
       isLoading.value = false;
 
       if (user != null) {
+        // Save session to shared preferences
+        final authSession = Get.find<AuthSessionService>();
+        await authSession.saveSession(
+          userId: user.id,
+          email: user.email ?? email,
+        );
+        
         _success("Login berhasil!");
         Get.offNamed(AppRoutes.menu);
       } else {

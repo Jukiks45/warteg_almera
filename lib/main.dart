@@ -8,6 +8,7 @@ import 'routes/app_routes.dart';
 // services
 import 'services/local_storage_service.dart';
 import 'services/supabase_service.dart';
+import 'services/auth_session_service.dart';
 import 'providers/login_providers.dart';
 
 /// Initializes all services in the correct order before running the app.
@@ -31,6 +32,14 @@ Future<void> initServices() async {
   } catch (e) {
      debugPrint("🛑 CRITICAL: FAILED to initialize SupabaseService. $e");
      rethrow;
+  }
+
+  // Initialize AuthSessionService for login session management
+  try {
+    await Get.putAsync(() => AuthSessionService().init(), permanent: true);
+    debugPrint("✅ AuthSessionService initialized.");
+  } catch(e) {
+    debugPrint("⚠️ FAILED AuthSessionService init: $e");
   }
 
   // Initialize LoginProviders, which depends on the now-available SupabaseService.
@@ -71,6 +80,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check if user is already logged in
+    final authSession = Get.find<AuthSessionService>();
+    final isLoggedIn = authSession.isLoggedIn();
+    
     return GetMaterialApp(
       title: 'Warung Makan',
       theme: ThemeData(
@@ -78,7 +91,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.login,
+      initialRoute: isLoggedIn ? AppRoutes.menu : AppRoutes.login,
       getPages: AppPages.routes,
     );
   }

@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../controllers/menu_controller.dart' as menu;
 import '../models/menu_model.dart'; // Wajib ada
 import '../../../routes/app_routes.dart';
+import '../../../providers/login_providers.dart';
 
 class MenuView extends GetView<menu.MenuController> {
   const MenuView({super.key});
@@ -36,9 +37,22 @@ class MenuView extends GetView<menu.MenuController> {
                 textConfirm: 'Ya',
                 textCancel: 'Tidak',
                 confirmTextColor: Colors.white,
-                onConfirm: () {
+                onConfirm: () async {
                   Get.back();
+                  
+                  // Logout dari Supabase dan hapus session
+                  final loginProvider = Get.find<LoginProviders>();
+                  await loginProvider.logout();
+                  
                   Get.offAllNamed(AppRoutes.login);
+                  
+                  Get.snackbar(
+                    'Sukses',
+                    'Anda telah logout',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: Colors.green,
+                    colorText: Colors.white,
+                  );
                 },
               );
             },
