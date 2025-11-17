@@ -5,55 +5,17 @@ import 'package:get/get.dart';
 import '../controllers/menu_controller.dart' as menu;
 import '../models/menu_model.dart'; // Wajib ada
 import '../../../routes/app_routes.dart';
-import '../../cart/controllers/cart_controller.dart';
 
 class MenuView extends GetView<menu.MenuController> {
   const MenuView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final cartController = Get.find<CartController>();
-    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Daftar Menu'),
         centerTitle: true,
         actions: [
-          // Cart Icon with Badge
-          Obx(() => Stack(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.shopping_cart),
-                    onPressed: () => Get.toNamed(AppRoutes.cart),
-                    tooltip: 'Keranjang',
-                  ),
-                  if (cartController.totalItems > 0)
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
-                        ),
-                        child: Text(
-                          '${cartController.totalItems}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                ],
-              )),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => controller.fetchMenuWithDetailHttp(),
@@ -280,8 +242,6 @@ class MenuView extends GetView<menu.MenuController> {
   // POP-UP DETAIL
   // =====================
   void _showMenuDetail(BuildContext context, MenuModel menu) {
-    final cartController = Get.find<CartController>();
-    
     Get.defaultDialog(
       title: menu.nama,
       content: Column(
@@ -299,14 +259,11 @@ class MenuView extends GetView<menu.MenuController> {
           const SizedBox(height: 12),
           ElevatedButton.icon(
             onPressed: () {
-              cartController.addToCart(menu);
               Get.back();
               Get.snackbar(
                 'Keranjang',
                 '${menu.nama} berhasil ditambahkan ke keranjang',
                 snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: Colors.green,
-                colorText: Colors.white,
               );
             },
             icon: const Icon(Icons.shopping_cart),
