@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controllers/login_controller.dart'; // UPDATED
-import '../../../routes/app_routes.dart';
+import '../controllers/login_controller.dart';
 
-class LoginView extends GetView<LoginController> {
-  const LoginView({super.key});
+class RegisterView extends GetView<LoginController> {
+  const RegisterView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -33,15 +32,13 @@ class LoginView extends GetView<LoginController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Icon
                   Icon(
-                    Icons.restaurant_menu,
+                    Icons.person_add,
                     size: iconSize,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   SizedBox(height: screenHeight * 0.02),
 
-                  // Title
                   Text(
                     'Warung Makan',
                     textAlign: TextAlign.center,
@@ -51,7 +48,6 @@ class LoginView extends GetView<LoginController> {
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
-
                   SizedBox(height: screenHeight * 0.01),
 
                   Text(
@@ -63,11 +59,10 @@ class LoginView extends GetView<LoginController> {
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
-
-                  SizedBox(height: screenHeight * 0.01),
+                  SizedBox(height: screenHeight * 0.02),
 
                   Text(
-                    'Silakan login untuk melanjutkan',
+                    'Buat akun baru untuk melanjutkan',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: isSmallScreen ? 13.0 : 15.0,
@@ -76,14 +71,14 @@ class LoginView extends GetView<LoginController> {
                   ),
                   SizedBox(height: screenHeight * 0.05),
 
-                  // USERNAME INPUT
+                  // EMAIL
                   TextField(
-                    controller: controller.usernameController,
-                    style: TextStyle(fontSize: isSmallScreen ? 14.0 : 16.0),
+                    controller: controller.regEmailController,
+                    keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
-                      labelText: 'Username',
-                      hintText: 'Masukkan username',
-                      prefixIcon: const Icon(Icons.person),
+                      labelText: "Email",
+                      hintText: "example@mail.com",
+                      prefixIcon: Icon(Icons.email),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -91,35 +86,70 @@ class LoginView extends GetView<LoginController> {
                   ),
                   SizedBox(height: screenHeight * 0.02),
 
-                  // PASSWORD INPUT
+                  // USERNAME (local DB only)
+                  TextField(
+                    controller: controller.regUsernameController,
+                    decoration: InputDecoration(
+                      labelText: "Username",
+                      prefixIcon: Icon(Icons.person),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * 0.02),
+
+                  // PASSWORD
                   Obx(() => TextField(
-                        controller: controller.passwordController,
-                        obscureText: controller.obscurePassword.value,
-                        style: TextStyle(fontSize: isSmallScreen ? 14.0 : 16.0),
+                        controller: controller.regPasswordController,
+                        obscureText: controller.obscureRegisterPassword.value,
                         decoration: InputDecoration(
-                          labelText: 'Password',
-                          hintText: 'Masukkan password',
-                          prefixIcon: const Icon(Icons.lock),
+                          labelText: "Password",
+                          prefixIcon: Icon(Icons.lock),
                           suffixIcon: IconButton(
                             icon: Icon(
-                              controller.obscurePassword.value
+                              controller.obscureRegisterPassword.value
                                   ? Icons.visibility_off
                                   : Icons.visibility,
                             ),
-                            onPressed: controller.togglePasswordVisibility,
+                            onPressed: controller.toggleRegPasswordVisibility,
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                       )),
-                  SizedBox(height: screenHeight * 0.03),
+                  SizedBox(height: screenHeight * 0.02),
 
-                  // LOGIN BUTTON
+                  // CONFIRM PASSWORD
+                  Obx(() => TextField(
+                        controller: controller.regConfirmPasswordController,
+                        obscureText:
+                            controller.obscureRegisterConfirmPassword.value,
+                        decoration: InputDecoration(
+                          labelText: "Konfirmasi Password",
+                          prefixIcon: Icon(Icons.lock_outline),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              controller.obscureRegisterConfirmPassword.value
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed:
+                                controller.toggleRegConfirmPasswordVisibility,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      )),
+                  SizedBox(height: screenHeight * 0.04),
+
+                  // REGISTER BUTTON
                   Obx(() => ElevatedButton(
                         onPressed: controller.isLoading.value
                             ? null
-                            : controller.login,
+                            : controller.register,
                         style: ElevatedButton.styleFrom(
                           padding: EdgeInsets.symmetric(
                             vertical: screenHeight * 0.02,
@@ -129,37 +159,45 @@ class LoginView extends GetView<LoginController> {
                           ),
                         ),
                         child: controller.isLoading.value
-                            ? const SizedBox(
+                            ? SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white),
+                                  valueColor:
+                                      AlwaysStoppedAnimation<Color>(Colors.white),
                                 ),
                               )
                             : Text(
-                                'Login',
+                                "Register",
                                 style: TextStyle(
-                                  fontSize: isSmallScreen ? 14.0 : 16.0,
+                                  fontSize: isSmallScreen ? 14 : 16,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                       )),
-
                   SizedBox(height: screenHeight * 0.02),
 
-                  // REGISTER LINK
-                  TextButton(
-                    onPressed: () {
-                      Get.toNamed(AppRoutes.register);
-                    },
-                    child: Text(
-                      "Belum punya akun? Daftar",
-                      style: TextStyle(
-                        fontSize: isSmallScreen ? 12 : 14,
+                  // LOGIN LINK
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Sudah punya akun?",
+                        style: TextStyle(
+                          fontSize: isSmallScreen ? 12 : 14,
+                        ),
                       ),
-                    ),
+                      TextButton(
+                        onPressed: () => Get.back(),
+                        child: Text(
+                          "Login",
+                          style: TextStyle(
+                            fontSize: isSmallScreen ? 12 : 14,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
