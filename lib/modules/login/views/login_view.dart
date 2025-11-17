@@ -1,23 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+<<<<<<< HEAD
 import '../controllers/login_controller.dart';
+=======
+import '../controllers/login_controller.dart'; // UPDATED
+>>>>>>> main-latest
 
 class LoginView extends GetView<LoginController> {
   const LoginView({super.key});
 
   @override
   Widget build(BuildContext context) {
+<<<<<<< HEAD
     // MediaQuery 
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+=======
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+>>>>>>> main-latest
     final isSmallScreen = screenWidth < 360;
     final isMediumScreen = screenWidth >= 360 && screenWidth < 600;
     final isLargeScreen = screenWidth >= 600;
 
+<<<<<<< HEAD
     // Responsive sizes berdasarkan ukuran layar
     final iconSize = isSmallScreen ? 80.0 : (isMediumScreen ? 100.0 : 140.0);
     final headlineSize = isSmallScreen ? 24.0 : (isMediumScreen ? 28.0 : 32.0);
     final horizontalPadding = screenWidth * 0.06; // 6% dari lebar layar
+=======
+    final iconSize = isSmallScreen ? 80.0 : (isMediumScreen ? 100.0 : 140.0);
+    final headlineSize = isSmallScreen ? 24.0 : (isMediumScreen ? 28.0 : 32.0);
+    final horizontalPadding = screenWidth * 0.06;
+>>>>>>> main-latest
     final maxWidth = isLargeScreen ? 500.0 : screenWidth;
 
     return Scaffold(
@@ -26,6 +42,7 @@ class LoginView extends GetView<LoginController> {
           child: SingleChildScrollView(
             padding: EdgeInsets.symmetric(
               horizontal: horizontalPadding,
+<<<<<<< HEAD
               vertical: screenHeight * 0.02, // 2% dari tinggi layar
             ),
             child: ConstrainedBox(
@@ -36,6 +53,16 @@ class LoginView extends GetView<LoginController> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Logo atau Icon - Responsive size
+=======
+              vertical: screenHeight * 0.02,
+            ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxWidth),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Icon
+>>>>>>> main-latest
                   Icon(
                     Icons.restaurant_menu,
                     size: iconSize,
@@ -43,7 +70,11 @@ class LoginView extends GetView<LoginController> {
                   ),
                   SizedBox(height: screenHeight * 0.02),
 
+<<<<<<< HEAD
                   // Judul - Responsive font size
+=======
+                  // Title
+>>>>>>> main-latest
                   Text(
                     'Warung Makan',
                     textAlign: TextAlign.center,
@@ -53,6 +84,10 @@ class LoginView extends GetView<LoginController> {
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
+<<<<<<< HEAD
+=======
+
+>>>>>>> main-latest
                   SizedBox(height: screenHeight * 0.01),
 
                   Text(
@@ -64,6 +99,10 @@ class LoginView extends GetView<LoginController> {
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
+<<<<<<< HEAD
+=======
+
+>>>>>>> main-latest
                   SizedBox(height: screenHeight * 0.01),
 
                   Text(
@@ -76,13 +115,18 @@ class LoginView extends GetView<LoginController> {
                   ),
                   SizedBox(height: screenHeight * 0.05),
 
+<<<<<<< HEAD
                   // Username TextField - Responsive
+=======
+                  // USERNAME INPUT
+>>>>>>> main-latest
                   TextField(
                     controller: controller.usernameController,
                     style: TextStyle(fontSize: isSmallScreen ? 14.0 : 16.0),
                     decoration: InputDecoration(
                       labelText: 'Username',
                       hintText: 'Masukkan username',
+<<<<<<< HEAD
                       prefixIcon: Icon(
                         Icons.person,
                         size: isSmallScreen ? 20.0 : 24.0,
@@ -94,11 +138,21 @@ class LoginView extends GetView<LoginController> {
                         horizontal: screenWidth * 0.04,
                         vertical: screenHeight * 0.02,
                       ),
+=======
+                      prefixIcon: const Icon(Icons.person),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+>>>>>>> main-latest
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.02),
 
+<<<<<<< HEAD
                   // Password TextField - Responsive
+=======
+                  // PASSWORD INPUT
+>>>>>>> main-latest
                   Obx(() => TextField(
                         controller: controller.passwordController,
                         obscureText: controller.obscurePassword.value,
@@ -106,31 +160,45 @@ class LoginView extends GetView<LoginController> {
                         decoration: InputDecoration(
                           labelText: 'Password',
                           hintText: 'Masukkan password',
+<<<<<<< HEAD
                           prefixIcon: Icon(
                             Icons.lock,
                             size: isSmallScreen ? 20.0 : 24.0,
                           ),
+=======
+                          prefixIcon: const Icon(Icons.lock),
+>>>>>>> main-latest
                           suffixIcon: IconButton(
                             icon: Icon(
                               controller.obscurePassword.value
                                   ? Icons.visibility_off
                                   : Icons.visibility,
+<<<<<<< HEAD
                               size: isSmallScreen ? 20.0 : 24.0,
+=======
+>>>>>>> main-latest
                             ),
                             onPressed: controller.togglePasswordVisibility,
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
+<<<<<<< HEAD
                           contentPadding: EdgeInsets.symmetric(
                             horizontal: screenWidth * 0.04,
                             vertical: screenHeight * 0.02,
                           ),
+=======
+>>>>>>> main-latest
                         ),
                       )),
                   SizedBox(height: screenHeight * 0.03),
 
+<<<<<<< HEAD
                   // Login Button - Responsive
+=======
+                  // LOGIN BUTTON
+>>>>>>> main-latest
                   Obx(() => ElevatedButton(
                         onPressed: controller.isLoading.value
                             ? null
@@ -144,10 +212,17 @@ class LoginView extends GetView<LoginController> {
                           ),
                         ),
                         child: controller.isLoading.value
+<<<<<<< HEAD
                             ? SizedBox(
                                 height: isSmallScreen ? 18.0 : 20.0,
                                 width: isSmallScreen ? 18.0 : 20.0,
                                 child: const CircularProgressIndicator(
+=======
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+>>>>>>> main-latest
                                   strokeWidth: 2,
                                   valueColor: AlwaysStoppedAnimation<Color>(
                                       Colors.white),
@@ -161,6 +236,7 @@ class LoginView extends GetView<LoginController> {
                                 ),
                               ),
                       )),
+<<<<<<< HEAD
                   SizedBox(height: screenHeight * 0.02),
 
                   // Info kredensial - Responsive
@@ -198,6 +274,21 @@ class LoginView extends GetView<LoginController> {
                           ),
                         ),
                       ],
+=======
+
+                  SizedBox(height: screenHeight * 0.02),
+
+                  // REGISTER LINK
+                  TextButton(
+                    onPressed: () {
+                      Get.toNamed('/register');
+                    },
+                    child: Text(
+                      "Belum punya akun? Daftar",
+                      style: TextStyle(
+                        fontSize: isSmallScreen ? 12 : 14,
+                      ),
+>>>>>>> main-latest
                     ),
                   ),
                 ],
