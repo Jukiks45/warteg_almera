@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../routes/app_routes.dart';
 
 class LoginController extends GetxController {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
+  final _supabase = Supabase.instance.client;
   
   var isLoading = false.obs;
   var obscurePassword = true.obs;
@@ -40,31 +42,58 @@ class LoginController extends GetxController {
       return;
     }
 
-    // Simulasi proses login
     isLoading.value = true;
 
-    await Future.delayed(const Duration(seconds: 2));
-
-    // Simulasi validasi (username: admin, password: admin123)
-    if (username == 'admin' && password == 'admin123') {
-      isLoading.value = false;
+    try {
+      // Login ke Supabase Auth menggunakan email format
+      // Format: username@warteg.com (atau bisa custom domain)
+      final email = '$username@warteg.com';
       
-      Get.snackbar(
-        'Sukses',
-        'Login berhasil!',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
+      final response = await _supabase.auth.signInWithPassword(
+        email: email,
+        password: password,
       );
 
-      // Navigasi ke halaman menu dan hapus halaman login dari tumpukan
-      Get.offNamed(AppRoutes.menu);
-    } else {
+      if (response.user != null) {
+        isLoading.value = false;
+        
+        Get.snackbar(
+          'Sukses',
+          'Login berhasil sebagai $username!',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+
+        // Navigasi ke halaman menu
+        Get.offNamed(AppRoutes.menu);
+      }
+    } on AuthException catch (e) {
+      isLoading.value = false;
+      
+      // Handle auth errors
+      String errorMessage = 'Login gagal';
+      if (e.message.contains('Invalid login credentials')) {
+        errorMessage = 'Username atau password salah';
+      } else if (e.message.contains('Email not confirmed')) {
+        errorMessage = 'Email belum dikonfirmasi';
+      } else {
+        errorMessage = e.message;
+      }
+      
+      Get.snackbar(
+        'Error',
+        errorMessage,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } catch (e) {
       isLoading.value = false;
       
       Get.snackbar(
         'Error',
-        'Username atau password salah',
+        'Terjadi kesalahan: $e',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
