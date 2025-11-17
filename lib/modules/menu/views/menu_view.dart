@@ -263,7 +263,7 @@ class MenuView extends GetView<menu.MenuController> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  selectedMenu.deskripsi,
+                  selectedMenu.deskripsi ?? '',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
@@ -324,14 +324,14 @@ class MenuView extends GetView<menu.MenuController> {
   // =====================
   
   // Helper khusus untuk gambar kecil di Selected Menu Card
-  Widget _buildFallbackIconSmall(BuildContext context, String kategori) {
+  Widget _buildFallbackIconSmall(BuildContext context, String? kategori) {
     return Container(
       width: 80,
       height: 80,
       alignment: Alignment.center,
       color: Theme.of(context).colorScheme.primaryContainer,
       child: Icon(
-        _getIconByCategory(kategori),
+        _getIconByCategory(kategori ?? ''),
         color: Theme.of(context).colorScheme.primary,
         size: 30,
       ),

@@ -32,15 +32,18 @@ class MenuModel extends HiveObject {
   });
 
   factory MenuModel.fromJson(Map<String, dynamic> json) {
-    return MenuModel(
-      id: json['id'] as int, // PASTIKAN PARSING SEBAGAI 'int'
-      nama: json['nama'] ?? 'Tanpa Nama',
-      harga: (json['harga'] as num?)?.toDouble() ?? 0.0,
-      kategori: json['kategori'] ?? 'Lainnya',
-      deskripsi: json['deskripsi'],
-      gambar: json['gambar'],
-    );
-  }
+  return MenuModel(
+    id: (json['id'] is int) ? json['id'] as int
+        : (json['id'] is String) ? int.tryParse(json['id']) ?? 0
+        : 0,
+    nama: (json['nama'] as String?) ?? 'Tanpa Nama',
+    harga: (json['harga'] as num?)?.toDouble() ?? 0.0,
+    kategori: (json['kategori'] as String?) ?? 'Lainnya',
+    deskripsi: (json['deskripsi'] as String?),
+    gambar: (json['gambar'] as String?),
+  );
+}
+
 
   Map<String, dynamic> toJson() {
     return {
