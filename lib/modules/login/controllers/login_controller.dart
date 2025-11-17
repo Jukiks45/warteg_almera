@@ -1,81 +1,144 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../routes/app_routes.dart';
+import '/providers/login_providers.dart';
 
 class LoginController extends GetxController {
-  final usernameController = TextEditingController();
+  final LoginProviders _provider = Get.find<LoginProviders>();
+
+  // --- Login Controllers ---
+  final usernameController = TextEditingController(); // email sebenarnya
   final passwordController = TextEditingController();
-  
+
+  // --- Register Controllers ---
+  final regEmailController = TextEditingController();
+  final regUsernameController =
+      TextEditingController(); // optional, for your DB
+  final regPasswordController = TextEditingController();
+  final regConfirmPasswordController = TextEditingController();
+
+  // UI State
   var isLoading = false.obs;
   var obscurePassword = true.obs;
+  var obscureRegisterPassword = true.obs;
+  var obscureRegisterConfirmPassword = true.obs;
 
+  // Toggle login password visibility
   void togglePasswordVisibility() {
     obscurePassword.value = !obscurePassword.value;
   }
 
+  // Toggle register password visibility
+  void toggleRegPasswordVisibility() {
+    obscureRegisterPassword.value = !obscureRegisterPassword.value;
+  }
+
+  // Toggle register confirm password visibility
+  void toggleRegConfirmPasswordVisibility() {
+    obscureRegisterConfirmPassword.value =
+        !obscureRegisterConfirmPassword.value;
+  }
+
+  // ---------------------------------------------------------------------------
+  //                                 LOGIN
+  // ---------------------------------------------------------------------------
   Future<void> login() async {
-    final username = usernameController.text.trim();
+    final email = usernameController.text.trim();
     final password = passwordController.text.trim();
 
-    // Validasi input
-    if (username.isEmpty) {
-      Get.snackbar(
-        'Error',
-        'Username tidak boleh kosong',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-      return;
-    }
+    if (email.isEmpty) return _error("Email tidak boleh kosong");
+    if (!email.contains("@")) return _error("Format email tidak valid");
 
-    if (password.isEmpty) {
-      Get.snackbar(
-        'Error',
-        'Password tidak boleh kosong',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-      return;
-    }
+    if (password.isEmpty) return _error("Password tidak boleh kosong");
 
-    // Simulasi proses login
     isLoading.value = true;
 
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final user = await _provider.login(email, password);
 
-    // Simulasi validasi (username: admin, password: admin123)
-    if (username == 'admin' && password == 'admin123') {
       isLoading.value = false;
-      
-      Get.snackbar(
-        'Sukses',
-        'Login berhasil!',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
 
-      // Navigasi ke halaman menu dan hapus halaman login dari tumpukan
-      Get.offNamed(AppRoutes.menu);
-    } else {
+      if (user != null) {
+        _success("Login berhasil!");
+        Get.offNamed(AppRoutes.menu);
+      } else {
+        _error("Login gagal. User tidak ditemukan.");
+      }
+    } catch (e) {
       isLoading.value = false;
-      
-      Get.snackbar(
-        'Error',
-        'Username atau password salah',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      _error(e.toString().replaceAll("Exception: ", ""));
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  //                                 REGISTER
+  // ---------------------------------------------------------------------------
+  Future<void> register() async {
+    final email = regEmailController.text.trim();
+    final username = regUsernameController.text.trim();
+    final password = regPasswordController.text.trim();
+    final confirmPassword = regConfirmPasswordController.text.trim();
+
+    if (email.isEmpty) return _error("Email tidak boleh kosong");
+    if (!email.contains("@")) return _error("Format email tidak valid");
+    if (username.isEmpty) return _error("Username tidak boleh kosong");
+    if (password.isEmpty) return _error("Password tidak boleh kosong");
+    if (password.length < 6) return _error("Password minimal 6 karakter");
+    if (confirmPassword.isEmpty)
+      return _error("Konfirmasi password harus diisi");
+    if (password != confirmPassword)
+      return _error("Password dan konfirmasi tidak sama");
+
+    isLoading.value = true;
+
+    try {
+      final user = await _provider.register(email, password);
+
+      isLoading.value = false;
+
+      if (user != null) {
+        _success("Registrasi berhasil! Silakan login.");
+        Get.back();
+      } else {
+        _error("Registrasi gagal. Coba lagi.");
+      }
+    } catch (e) {
+      isLoading.value = false;
+      _error(e.toString().replaceAll("Exception: ", ""));
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  //                              Snackbars
+  // ---------------------------------------------------------------------------
+  void _error(String message) {
+    Get.snackbar(
+      "Error",
+      message,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+  }
+
+  void _success(String message) {
+    Get.snackbar(
+      "Sukses",
+      message,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+    );
   }
 
   @override
   void onClose() {
     usernameController.dispose();
     passwordController.dispose();
+    regEmailController.dispose();
+    regUsernameController.dispose();
+    regPasswordController.dispose();
+    regConfirmPasswordController.dispose();
     super.onClose();
   }
 }

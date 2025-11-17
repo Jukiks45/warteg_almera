@@ -31,14 +31,17 @@ Future<void> main() async {
     debugPrint(st.toString());
   }
 
-  // --- INIT Supabase ---
-  try {
-    await SupabaseService().init();
-    debugPrint(">>> Supabase initialized");
-  } catch (e, st) {
-    debugPrint(">>> FAILED Supabase init: $e");
-    debugPrint(st.toString());
-  }
+ // --- INIT Supabase ---
+try {
+  final supabaseService = await SupabaseService().init();
+  Get.put<SupabaseService>(supabaseService, permanent: true);
+
+  debugPrint(">>> Supabase initialized & registered");
+} catch (e, st) {
+  debugPrint(">>> FAILED Supabase init: $e");
+  debugPrint(st.toString());
+}
+
 
   // --- RUN UI (TIDAK DIUBAH) ---
   runApp(const MyApp());
