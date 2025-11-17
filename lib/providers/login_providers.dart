@@ -6,44 +6,27 @@ class LoginProviders extends GetxService {
   late final SupabaseClient _client;
 
   @override
-  void onInit() {
-    super.onInit();
+  void onReady() {
     _client = Get.find<SupabaseService>().client;
+    super.onReady();
   }
 
-  /// Login with email & password
   Future<User?> login(String email, String password) async {
-    try {
-      final response = await _client.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
-
-      return response.user;
-    } on AuthException catch (e) {
-      throw Exception(e.message);
-    } catch (e) {
-      throw Exception("Unknown error: $e");
-    }
+    final response = await _client.auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
+    return response.user;
   }
 
-  /// Register a new user
   Future<User?> register(String email, String password) async {
-    try {
-      final response = await _client.auth.signUp(
-        email: email,
-        password: password,
-      );
-
-      return response.user;
-    } on AuthException catch (e) {
-      throw Exception(e.message);
-    } catch (e) {
-      throw Exception("Unknown error: $e");
-    }
+    final response = await _client.auth.signUp(
+      email: email,
+      password: password,
+    );
+    return response.user;
   }
 
-  /// Logout
   Future<void> logout() async {
     await _client.auth.signOut();
   }
