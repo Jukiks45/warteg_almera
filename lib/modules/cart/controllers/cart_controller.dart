@@ -1,11 +1,56 @@
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../models/cart_item_model.dart';
 import '../../menu/models/menu_model.dart';
+import '../../../services/local_storage_service.dart';
 
 class CartController extends GetxController {
   final cartItems = <CartItemModel>[].obs;
   final _supabase = Supabase.instance.client;
+  late Box _cartBox;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _initHive();
+  }
+
+  // Initialize Hive and load cart
+  Future<void> _initHive() async {
+    try {
+      _cartBox = Hive.box(LocalStorageService.cartBoxName);
+      _loadCartFromHive();
+    } catch (e) {
+      print('Error initializing Hive cart: $e');
+    }
+  }
+
+  // Load cart from Hive
+  void _loadCartFromHive() {
+    try {
+      final savedCart = _cartBox.get('cart_items');
+      if (savedCart != null && savedCart is List) {
+        cartItems.value = savedCart
+            .map((item) => CartItemModel.fromJson(Map<String, dynamic>.from(item)))
+            .toList();
+        print('Cart loaded from Hive: ${cartItems.length} items');
+      }
+    } catch (e) {
+      print('Error loading cart from Hive: $e');
+    }
+  }
+
+  // Save cart to Hive
+  Future<void> _saveCartToHive() async {
+    try {
+      final cartData = cartItems.map((item) => item.toJson()).toList();
+      await _cartBox.put('cart_items', cartData);
+      print('Cart saved to Hive: ${cartItems.length} items');
+    } catch (e) {
+      print('Error saving cart to Hive: $e');
+    }
+  }
 
   // Computed properties
   int get totalItems => cartItems.fold(0, (sum, item) => sum + item.quantity);
@@ -24,6 +69,8 @@ class CartController extends GetxController {
       // Add new item
       cartItems.add(CartItemModel(menu: menu, quantity: quantity));
     }
+    
+    _saveCartToHive();
   }
 
   // Update quantity
@@ -37,6 +84,7 @@ class CartController extends GetxController {
     if (index != -1) {
       cartItems[index].quantity = newQuantity;
       cartItems.refresh();
+      _saveCartToHive();
     }
   }
 
@@ -46,6 +94,7 @@ class CartController extends GetxController {
     if (index != -1) {
       cartItems[index].quantity++;
       cartItems.refresh();
+      _saveCartToHive();
     }
   }
 
@@ -56,6 +105,7 @@ class CartController extends GetxController {
       if (cartItems[index].quantity > 1) {
         cartItems[index].quantity--;
         cartItems.refresh();
+        _saveCartToHive();
       } else {
         removeFromCart(menuId);
       }
@@ -65,11 +115,13 @@ class CartController extends GetxController {
   // Remove item from cart
   void removeFromCart(int menuId) {
     cartItems.removeWhere((item) => item.menu.id == menuId);
+    _saveCartToHive();
   }
 
   // Clear all cart
   void clearCart() {
     cartItems.clear();
+    _saveCartToHive();
   }
 
   // Get quantity of specific item
@@ -129,10 +181,19 @@ class CartController extends GetxController {
 
       await _supabase.from('order_items').insert(orderItemsData);
 
+      // Clear cart after successful payment
+      clearCart();
+
       return orderId;
     } catch (e) {
       print('Error saving order to Supabase: $e');
       rethrow;
     }
+  }
+
+  @override
+  void onClose() {
+    _saveCartToHive();
+    super.onClose();
   }
 }
