@@ -1,21 +1,49 @@
+import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../modules/cart/models/cart_item_adapter.dart';
+import '../modules/cart/models/cart_item_model.dart';
 
-class LocalStorageService {
-  static const String cartBoxName = 'cartBox';
+class LocalStorageService extends GetxService {
+  static const String cartBoxName = 'cart_box';
   
+  late final Box<CartItemModel> _cartBox;
+  
+  Box<CartItemModel> get cartBox => _cartBox;
+
   Future<LocalStorageService> init() async {
-    await Hive.initFlutter();
-    
-    // Register adapter untuk CartItemModel
-    if (!Hive.isAdapterRegistered(0)) {
-      Hive.registerAdapter(CartItemAdapter());
+    try {
+      print('🔧 Initializing Hive...');
+      
+      // Initialize Hive Flutter
+      await Hive.initFlutter();
+      print('✅ Hive.initFlutter() completed');
+      
+      // Register CartItemModel adapter SAJA
+      if (!Hive.isAdapterRegistered(2)) {
+        Hive.registerAdapter(CartItemModelAdapter());
+        print('✅ CartItemModelAdapter registered (typeId: 2)');
+      }
+      
+      // Open cart box
+      _cartBox = await Hive.openBox<CartItemModel>(cartBoxName);
+      print('✅ $cartBoxName opened (${_cartBox.length} items found)');
+      
+      // Debug: Show items in box
+      if (_cartBox.isNotEmpty) {
+        print('📦 Items in box:');
+        for (var item in _cartBox.values) {
+          print('   - ${item.menuNama} x${item.quantity}');
+        }
+      }
+      
+      print('✅ LocalStorageService initialized successfully');
+      return this;
+    } catch (e) {
+      print('❌ Error initializing LocalStorageService: $e');
+      rethrow;
     }
-    
-    // Open boxes
-    await Hive.openBox('appBox');
-    await Hive.openBox(cartBoxName);
-    
-    return this;
+  }
+
+  Future<void> close() async {
+    await _cartBox.close();
   }
 }

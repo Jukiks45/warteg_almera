@@ -7,6 +7,8 @@ import '../models/menu_model.dart'; // Wajib ada
 import '../../../routes/app_routes.dart';
 import '../../cart/controllers/cart_controller.dart';
 import '../../../providers/login_providers.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
 
 class MenuView extends GetView<menu.MenuController> {
   const MenuView({super.key});
@@ -350,6 +352,111 @@ class MenuView extends GetView<menu.MenuController> {
     );
   }
 
+  // Helper method untuk debug Hive
+  void _showHiveDebugDialog(BuildContext context) {
+    final cartController = Get.find<CartController>();
+
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Hive Debug Info'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('📊 Debug Information:',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+
+              // Check if Hive is initialized
+              Text('Hive initialized: ${Hive.isBoxOpen('cartBox')}'),
+              const SizedBox(height: 8),
+
+              // Cart items in memory
+              Text('Items in memory: ${cartController.cartItems.length}'),
+              const SizedBox(height: 8),
+
+              // Items in Hive
+              Builder(builder: (context) {
+                try {
+                  final box = Hive.box('cartBox');
+                  final savedCart = box.get('cart_items');
+                  final count = savedCart is List ? savedCart.length : 0;
+                  return Text('Items in Hive: $count');
+                } catch (e) {
+                  return Text('Error reading Hive: $e',
+                      style: const TextStyle(color: Colors.red));
+                }
+              }),
+              const SizedBox(height: 16),
+
+              const Divider(),
+              const SizedBox(height: 16),
+
+              const Text('🛠️ Actions:',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+
+              ElevatedButton.icon(
+                onPressed: () async {
+                  // Reload cart dari Hive
+                  final box = Hive.box('cartBox');
+                  final savedCart = box.get('cart_items');
+                  if (savedCart != null && savedCart is List) {
+                    Get.back();
+                    Get.snackbar(
+                      'Debug',
+                      'Found ${savedCart.length} items in Hive',
+                      snackPosition: SnackPosition.BOTTOM,
+                    );
+                  } else {
+                    Get.back();
+                    Get.snackbar(
+                      'Debug',
+                      'No data found in Hive',
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: Colors.orange,
+                    );
+                  }
+                },
+                icon: const Icon(Icons.refresh),
+                label: const Text('Check Hive Data'),
+              ),
+              const SizedBox(height: 8),
+
+              ElevatedButton.icon(
+                onPressed: () async {
+                  await Hive.deleteBoxFromDisk('cartBox');
+                  await Hive.openBox('cartBox');
+                  cartController.cartItems.clear();
+                  Get.back();
+                  Get.snackbar(
+                    'Debug',
+                    'Hive cart cleared & reopened',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: Colors.red,
+                    colorText: Colors.white,
+                  );
+                },
+                icon: const Icon(Icons.delete_forever),
+                label: const Text('Clear Hive Data'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
   // =====================
   // HELPER METHODS
   // =====================

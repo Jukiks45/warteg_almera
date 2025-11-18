@@ -6,49 +6,57 @@ import '../../menu/models/menu_model.dart';
 import '../../../services/local_storage_service.dart';
 
 class CartController extends GetxController {
-  final cartItems = <CartItemModel>[].obs;
+  final LocalStorageService _localStorage = Get.find();
   final _supabase = Supabase.instance.client;
-  late Box _cartBox;
+  
+  final cartItems = <CartItemModel>[].obs;
+
+  Box<CartItemModel> get _cartBox => _localStorage.cartBox;
 
   @override
   void onInit() {
     super.onInit();
-    _initHive();
-  }
-
-  // Initialize Hive and load cart
-  Future<void> _initHive() async {
-    try {
-      _cartBox = Hive.box(LocalStorageService.cartBoxName);
-      _loadCartFromHive();
-    } catch (e) {
-      print('Error initializing Hive cart: $e');
-    }
+    print('🛒 CartController onInit() called');
+    _loadCart();
   }
 
   // Load cart from Hive
-  void _loadCartFromHive() {
+  void _loadCart() {
     try {
-      final savedCart = _cartBox.get('cart_items');
-      if (savedCart != null && savedCart is List) {
-        cartItems.value = savedCart
-            .map((item) => CartItemModel.fromJson(Map<String, dynamic>.from(item)))
-            .toList();
-        print('Cart loaded from Hive: ${cartItems.length} items');
+      print('📂 Loading cart from Hive...');
+      
+      final items = _cartBox.values.toList();
+      cartItems.assignAll(items);
+      
+      print('✅ Cart loaded: ${cartItems.length} items');
+      
+      // Debug log
+      for (var item in cartItems) {
+        print('   📦 ${item.menuNama} x${item.quantity} = Rp${item.subtotal}');
       }
+      
     } catch (e) {
-      print('Error loading cart from Hive: $e');
+      print('❌ Error loading cart: $e');
     }
   }
 
   // Save cart to Hive
-  Future<void> _saveCartToHive() async {
+  Future<void> _saveCart() async {
     try {
-      final cartData = cartItems.map((item) => item.toJson()).toList();
-      await _cartBox.put('cart_items', cartData);
-      print('Cart saved to Hive: ${cartItems.length} items');
+      print('💾 Saving cart to Hive...');
+      
+      // Clear box first
+      await _cartBox.clear();
+      
+      // Save all items with menuId as key
+      for (var item in cartItems) {
+        await _cartBox.put(item.menuId, item);
+      }
+      
+      print('✅ Cart saved: ${cartItems.length} items');
+      
     } catch (e) {
-      print('Error saving cart to Hive: $e');
+      print('❌ Error saving cart: $e');
     }
   }
 
@@ -59,18 +67,20 @@ class CartController extends GetxController {
 
   // Add item to cart
   void addToCart(MenuModel menu, {int quantity = 1}) {
-    final index = cartItems.indexWhere((item) => item.menu.id == menu.id);
+    print('➕ Adding to cart: ${menu.nama} x$quantity');
+    
+    final index = cartItems.indexWhere((item) => item.menuId == menu.id);
     
     if (index != -1) {
-      // Item already exists, update quantity
       cartItems[index].quantity += quantity;
+      print('   Updated quantity: ${cartItems[index].quantity}');
       cartItems.refresh();
     } else {
-      // Add new item
-      cartItems.add(CartItemModel(menu: menu, quantity: quantity));
+      cartItems.add(CartItemModel.fromMenu(menu, quantity: quantity));
+      print('   Added new item');
     }
     
-    _saveCartToHive();
+    _saveCart();
   }
 
   // Update quantity
@@ -80,32 +90,32 @@ class CartController extends GetxController {
       return;
     }
     
-    final index = cartItems.indexWhere((item) => item.menu.id == menuId);
+    final index = cartItems.indexWhere((item) => item.menuId == menuId);
     if (index != -1) {
       cartItems[index].quantity = newQuantity;
       cartItems.refresh();
-      _saveCartToHive();
+      _saveCart();
     }
   }
 
   // Increase quantity
   void increaseQuantity(int menuId) {
-    final index = cartItems.indexWhere((item) => item.menu.id == menuId);
+    final index = cartItems.indexWhere((item) => item.menuId == menuId);
     if (index != -1) {
       cartItems[index].quantity++;
       cartItems.refresh();
-      _saveCartToHive();
+      _saveCart();
     }
   }
 
   // Decrease quantity
   void decreaseQuantity(int menuId) {
-    final index = cartItems.indexWhere((item) => item.menu.id == menuId);
+    final index = cartItems.indexWhere((item) => item.menuId == menuId);
     if (index != -1) {
       if (cartItems[index].quantity > 1) {
         cartItems[index].quantity--;
         cartItems.refresh();
-        _saveCartToHive();
+        _saveCart();
       } else {
         removeFromCart(menuId);
       }
@@ -114,35 +124,36 @@ class CartController extends GetxController {
 
   // Remove item from cart
   void removeFromCart(int menuId) {
-    cartItems.removeWhere((item) => item.menu.id == menuId);
-    _saveCartToHive();
+    print('🗑️ Removing item from cart: menuId=$menuId');
+    cartItems.removeWhere((item) => item.menuId == menuId);
+    _saveCart();
   }
 
   // Clear all cart
   void clearCart() {
+    print('🧹 Clearing all cart items');
     cartItems.clear();
-    _saveCartToHive();
+    _saveCart();
   }
 
   // Get quantity of specific item
   int getItemQuantity(int menuId) {
-    final index = cartItems.indexWhere((item) => item.menu.id == menuId);
+    final index = cartItems.indexWhere((item) => item.menuId == menuId);
     return index != -1 ? cartItems[index].quantity : 0;
   }
 
   // Check if item exists in cart
   bool isInCart(int menuId) {
-    return cartItems.any((item) => item.menu.id == menuId);
+    return cartItems.any((item) => item.menuId == menuId);
   }
 
-  // Save order to Supabase (requires login)
+  // Save order to Supabase
   Future<String?> saveOrderToSupabase({String paymentMethod = 'cash', String? note}) async {
     try {
       if (cartItems.isEmpty) {
         throw Exception('Keranjang kosong');
       }
 
-      // Get current user - WAJIB LOGIN
       final user = _supabase.auth.currentUser;
       if (user == null) {
         throw Exception('Anda harus login terlebih dahulu untuk melakukan pemesanan');
@@ -150,7 +161,7 @@ class CartController extends GetxController {
 
       // 1. Insert order header
       final orderData = {
-        'user_id': user.id, // WAJIB ada user_id
+        'user_id': user.id,
         'total_items': totalItems,
         'total_price': totalPrice,
         'status': 'paid',
@@ -170,10 +181,10 @@ class CartController extends GetxController {
       final orderItemsData = cartItems.map((item) {
         return {
           'order_id': orderId,
-          'menu_id': item.menu.id,
-          'menu_nama': item.menu.nama,
-          'menu_kategori': item.menu.kategori,
-          'menu_harga': item.menu.harga,
+          'menu_id': item.menuId,
+          'menu_nama': item.menuNama,
+          'menu_kategori': item.menuKategori,
+          'menu_harga': item.menuHarga,
           'quantity': item.quantity,
           'subtotal': item.subtotal,
         };
@@ -186,14 +197,14 @@ class CartController extends GetxController {
 
       return orderId;
     } catch (e) {
-      print('Error saving order to Supabase: $e');
+      print('❌ Error saving order to Supabase: $e');
       rethrow;
     }
   }
 
   @override
   void onClose() {
-    _saveCartToHive();
+    print('🔴 CartController onClose() called');
     super.onClose();
   }
 }

@@ -13,65 +13,76 @@ import 'providers/login_providers.dart';
 
 /// Initializes all services in the correct order before running the app.
 Future<void> initServices() async {
-  debugPrint("--- Starting Service Initialization ---");
+  debugPrint("=".padRight(60, '='));
+  debugPrint("🚀 Starting Service Initialization");
+  debugPrint("=".padRight(60, '='));
 
-  // Load .env file first, as other services depend on it.
+  // 1. Load .env file first
   try {
     await dotenv.load(fileName: ".env");
-    debugPrint("✅ .env file loaded.");
+    debugPrint("✅ [1/5] .env file loaded");
   } catch (e) {
     debugPrint("🛑 CRITICAL: FAILED to load .env file. $e");
-    // Re-throw because the app is not functional without it.
     throw Exception("Could not load .env file. Please ensure 'warteg_almera/.env' exists and is correctly formatted.");
   }
 
-  // Initialize SupabaseService. Get.putAsync waits for the init() Future to complete.
+  // 2. Initialize LocalStorageService PERTAMA (ini yang penting!)
   try {
-    await Get.putAsync(() => SupabaseService().init(), permanent: true);
-    debugPrint("✅ SupabaseService initialized and registered.");
-  } catch (e) {
-     debugPrint("🛑 CRITICAL: FAILED to initialize SupabaseService. $e");
-     rethrow;
+    debugPrint("🔧 [2/5] Initializing LocalStorageService...");
+    await Get.putAsync(() => LocalStorageService().init(), permanent: true);
+    debugPrint("✅ [2/5] LocalStorageService initialized and registered");
+  } catch(e) {
+    debugPrint("🛑 CRITICAL: FAILED LocalStorageService init: $e");
+    rethrow;
   }
 
-  // Initialize AuthSessionService for login session management
+  // 3. Initialize SupabaseService
   try {
+    debugPrint("🔧 [3/5] Initializing SupabaseService...");
+    await Get.putAsync(() => SupabaseService().init(), permanent: true);
+    debugPrint("✅ [3/5] SupabaseService initialized and registered");
+  } catch (e) {
+    debugPrint("🛑 CRITICAL: FAILED to initialize SupabaseService. $e");
+    rethrow;
+  }
+
+  // 4. Initialize AuthSessionService
+  try {
+    debugPrint("🔧 [4/5] Initializing AuthSessionService...");
     await Get.putAsync(() => AuthSessionService().init(), permanent: true);
-    debugPrint("✅ AuthSessionService initialized.");
+    debugPrint("✅ [4/5] AuthSessionService initialized");
   } catch(e) {
     debugPrint("⚠️ FAILED AuthSessionService init: $e");
   }
 
-  // Initialize LoginProviders, which depends on the now-available SupabaseService.
-  Get.put(LoginProviders(), permanent: true);
-  debugPrint("✅ LoginProviders registered.");
-
-
-  // Initialize other services like LocalStorageService if needed
+  // 5. Initialize LoginProviders
   try {
-    await Get.putAsync(() => LocalStorageService().init());
-    debugPrint("✅ LocalStorageService initialized.");
+    debugPrint("🔧 [5/5] Registering LoginProviders...");
+    Get.put(LoginProviders(), permanent: true);
+    debugPrint("✅ [5/5] LoginProviders registered");
   } catch(e) {
-    debugPrint("⚠️ FAILED LocalStorage init: $e");
+    debugPrint("⚠️ FAILED LoginProviders init: $e");
   }
 
-  debugPrint("--- Service Initialization Complete ---");
+  debugPrint("=".padRight(60, '='));
+  debugPrint("✅ All Services Initialized Successfully");
+  debugPrint("=".padRight(60, '='));
 }
 
 Future<void> main() async {
-  // Ensure Flutter engine and GetX are ready.
+  // Ensure Flutter engine and GetX are ready
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize all critical services before running the app.
+  // Initialize all critical services before running the app
   try {
     await initServices();
   } catch (e) {
-    // If services fail, run a fallback error app to display the issue.
+    // If services fail, run a fallback error app to display the issue
     runApp(ErrorApp(error: e.toString()));
-    return; // Stop further execution.
+    return; // Stop further execution
   }
 
-  // All services are loaded, run the main application.
+  // All services are loaded, run the main application
   runApp(const MyApp());
 }
 
@@ -83,6 +94,10 @@ class MyApp extends StatelessWidget {
     // Check if user is already logged in
     final authSession = Get.find<AuthSessionService>();
     final isLoggedIn = authSession.isLoggedIn();
+    
+    debugPrint("📱 Building MyApp...");
+    debugPrint("🔐 User logged in: $isLoggedIn");
+    debugPrint("🏠 Initial route: ${isLoggedIn ? AppRoutes.menu : AppRoutes.login}");
     
     return GetMaterialApp(
       title: 'Warung Makan',
