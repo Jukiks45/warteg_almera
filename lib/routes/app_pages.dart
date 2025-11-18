@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import '../modules/login/bindings/login_binding.dart';
 import '../modules/login/views/login_view.dart';
+import '../modules/login/views/register_view.dart';
 import '../modules/menu/bindings/menu_binding.dart';
 import '../modules/menu/views/menu_view.dart';
 import '../modules/cart/bindings/cart_binding.dart';
@@ -25,6 +26,11 @@ class AppPages {
       name: AppRoutes.cart,
       page: () => const CartView(),
       binding: CartBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.register,
+      page: () => const RegisterView(),
+      binding: LoginBinding(),
     ),
     GetPage(
       name: AppRoutes.orderHistory,

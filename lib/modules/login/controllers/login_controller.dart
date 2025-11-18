@@ -63,7 +63,7 @@ class LoginController extends GetxController {
       isLoading.value = false;
 
       if (user != null) {
-        // Save session to shared preferences
+    
         final authSession = Get.find<AuthSessionService>();
         await authSession.saveSession(
           userId: user.id,
