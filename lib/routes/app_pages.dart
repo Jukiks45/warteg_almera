@@ -37,10 +37,5 @@ class AppPages {
       page: () => const OrderHistoryView(),
       binding: OrderHistoryBinding(),
     ),
-    GetPage(
-      name: AppRoutes.lokasi,
-      // page: () => const lokasiView(), //tambahinview
-      // binding: LocationBinding(), //tambahinbinding
-    ),
   ];
 }
