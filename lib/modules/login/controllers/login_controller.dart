@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+// import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../routes/app_routes.dart';
 import '../../../services/auth_session_service.dart';
 import '/providers/login_providers.dart';
@@ -11,8 +11,6 @@ class LoginController extends GetxController {
   // --- Login Controllers ---
   final usernameController = TextEditingController(); // email sebenarnya
   final passwordController = TextEditingController();
-  final _supabase = Supabase.instance.client;
-  
 
   // --- Register Controllers ---
   final regEmailController = TextEditingController();
@@ -75,9 +73,15 @@ class LoginController extends GetxController {
       } else {
         _error("Login gagal. User tidak ditemukan.");
       }
+    } on Exception catch (e) {
+      isLoading.value = false;
+      final cleanMessage = e.toString().replaceAll("Exception: ", "");
+      print('❌ Login error: $cleanMessage');
+      _error(cleanMessage);
     } catch (e) {
       isLoading.value = false;
-      _error(e.toString().replaceAll("Exception: ", ""));
+      print('❌ Unexpected login error: $e');
+      _error("Terjadi kesalahan tidak terduga");
     }
   }
 
@@ -103,19 +107,27 @@ class LoginController extends GetxController {
     isLoading.value = true;
 
     try {
+      print('📝 Attempting registration for: $email');
       final user = await _provider.register(email, password);
 
       isLoading.value = false;
 
       if (user != null) {
+        print('✅ Registration successful for: $email');
         _success("Registrasi berhasil! Silakan login.");
         Get.back();
       } else {
         _error("Registrasi gagal. Coba lagi.");
       }
+    } on Exception catch (e) {
+      isLoading.value = false;
+      final cleanMessage = e.toString().replaceAll("Exception: ", "");
+      print('❌ Registration error: $cleanMessage');
+      _error(cleanMessage);
     } catch (e) {
       isLoading.value = false;
-      _error(e.toString().replaceAll("Exception: ", ""));
+      print('❌ Unexpected registration error: $e');
+      _error("Terjadi kesalahan tidak terduga");
     }
   }
 

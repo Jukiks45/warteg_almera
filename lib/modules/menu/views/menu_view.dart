@@ -352,7 +352,8 @@ class MenuView extends GetView<menu.MenuController> {
     );
   }
 
-  // Helper method untuk debug Hive
+  // Helper method untuk debug Hive (unused tapi bisa berguna untuk debugging)
+  // ignore: unused_element
   void _showHiveDebugDialog(BuildContext context) {
     final cartController = Get.find<CartController>();
 

@@ -415,11 +415,25 @@ class CartView extends GetView<CartController> {
     );
 
     try {
-      // Save order to Supabase
+      print('💳 Processing payment...');
+      
+      // Validasi cart tidak kosong
+      if (controller.cartItems.isEmpty) {
+        throw Exception('Keranjang kosong');
+      }
+
+      // Save order to Supabase dengan timeout
       final orderId = await controller.saveOrderToSupabase(
         paymentMethod: 'cash',
         note: 'Order dari aplikasi mobile',
+      ).timeout(
+        const Duration(seconds: 45),
+        onTimeout: () {
+          throw Exception('Timeout saat memproses pembayaran. Coba lagi.');
+        },
       );
+
+      print('✅ Payment processed successfully: $orderId');
 
       // Close loading
       Get.back();
@@ -482,9 +496,12 @@ class CartView extends GetView<CartController> {
           ),
         ),
       );
-    } catch (e) {
+    } on Exception catch (e) {
       // Close loading
       Get.back();
+
+      final cleanMessage = e.toString().replaceAll('Exception: ', '');
+      print('❌ Payment error: $cleanMessage');
 
       // Show error
       Get.dialog(
@@ -518,8 +535,14 @@ class CartView extends GetView<CartController> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  e.toString(),
+                  cleanMessage,
                   style: TextStyle(color: Colors.grey[600]),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Silakan coba lagi atau hubungi admin',
+                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),

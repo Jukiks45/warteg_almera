@@ -31,9 +31,12 @@ Future<void> initServices() async {
     debugPrint("🔧 [2/5] Initializing LocalStorageService...");
     await Get.putAsync(() => LocalStorageService().init(), permanent: true);
     debugPrint("✅ [2/5] LocalStorageService initialized and registered");
+  } on Exception catch(e) {
+    debugPrint("🛑 CRITICAL: FAILED LocalStorageService init: ${e.toString()}");
+    throw Exception("Gagal inisialisasi database lokal: ${e.toString()}");
   } catch(e) {
     debugPrint("🛑 CRITICAL: FAILED LocalStorageService init: $e");
-    rethrow;
+    throw Exception("Gagal inisialisasi penyimpanan lokal: $e");
   }
 
   // 3. Initialize SupabaseService
@@ -41,9 +44,12 @@ Future<void> initServices() async {
     debugPrint("🔧 [3/5] Initializing SupabaseService...");
     await Get.putAsync(() => SupabaseService().init(), permanent: true);
     debugPrint("✅ [3/5] SupabaseService initialized and registered");
+  } on Exception catch (e) {
+    debugPrint("🛑 CRITICAL: FAILED to initialize SupabaseService: ${e.toString()}");
+    throw Exception("Gagal koneksi ke server: ${e.toString()}");
   } catch (e) {
-    debugPrint("🛑 CRITICAL: FAILED to initialize SupabaseService. $e");
-    rethrow;
+    debugPrint("🛑 CRITICAL: FAILED to initialize SupabaseService: $e");
+    throw Exception("Gagal inisialisasi server: $e");
   }
 
   // 4. Initialize AuthSessionService
@@ -51,8 +57,12 @@ Future<void> initServices() async {
     debugPrint("🔧 [4/5] Initializing AuthSessionService...");
     await Get.putAsync(() => AuthSessionService().init(), permanent: true);
     debugPrint("✅ [4/5] AuthSessionService initialized");
+  } on Exception catch(e) {
+    debugPrint("⚠️ FAILED AuthSessionService init: ${e.toString()}");
+    // Non-critical, app can continue without session
   } catch(e) {
     debugPrint("⚠️ FAILED AuthSessionService init: $e");
+    // Non-critical, app can continue without session
   }
 
   // 5. Initialize LoginProviders
@@ -60,8 +70,12 @@ Future<void> initServices() async {
     debugPrint("🔧 [5/5] Registering LoginProviders...");
     Get.put(LoginProviders(), permanent: true);
     debugPrint("✅ [5/5] LoginProviders registered");
+  } on Exception catch(e) {
+    debugPrint("⚠️ FAILED LoginProviders init: ${e.toString()}");
+    // Non-critical, but auth features won't work
   } catch(e) {
     debugPrint("⚠️ FAILED LoginProviders init: $e");
+    // Non-critical, but auth features won't work
   }
 
   debugPrint("=".padRight(60, '='));
