@@ -3,14 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/menu_controller.dart' as menu;
-import '../models/menu_model.dart'; // Wajib ada
+import '../models/menu_model.dart';
 import '../../../routes/app_routes.dart';
 import '../../cart/controllers/cart_controller.dart';
 import '../../../providers/login_providers.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:permission_handler/permission_handler.dart' as permission_handler;
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 
 
@@ -73,8 +70,10 @@ class MenuView extends GetView<menu.MenuController> {
           ),
           IconButton(
             icon: const Icon(Icons.location_on),
-            onPressed: () => _getCurrentLocation(context),
-            tooltip: 'Lokasi Jaringan',
+            onPressed: () {
+              Get.toNamed(AppRoutes.lokasi);
+            },
+            tooltip: 'Lokasi Saya',
           ),
 
           // IconButton(
@@ -85,7 +84,7 @@ class MenuView extends GetView<menu.MenuController> {
           IconButton(
             icon: const Icon(Icons.map),
             onPressed: () {
-              // Get.toNamed(Routes.LOCATION);
+              Get.toNamed(AppRoutes.lokasi);
             },
             tooltip: 'Buka Maps',
           ),
@@ -582,71 +581,4 @@ class MenuView extends GetView<menu.MenuController> {
     return amount.toStringAsFixed(0).replaceAllMapped(
         RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
   }
-
-    Future<void> _getCurrentLocation(BuildContext context) async {
-    final status = await permission_handler.Permission.location.request();
-
-    if (status.isGranted) {
-      try {
-        final position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high,
-        );
-
-        // Ganti snackbar dengan tampilan peta
-        _showMapDialog(context, position.latitude, position.longitude);
-      } catch (e) {
-        Get.snackbar(
-          'Error Lokasi',
-          'Gagal mendapatkan lokasi: $e',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      }
-    } else {
-      Get.snackbar(
-        'Izin Ditolak',
-        'Aplikasi tidak mendapat izin lokasi',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-      );
-    }
-  }
-
-  void _showMapDialog(BuildContext context, double lat, double lon) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Lokasi Terkini'),
-        content: SizedBox(
-          width: double.maxFinite,
-          height: 300,
-          child: GoogleMap(
-            initialCameraPosition: CameraPosition(
-              target: LatLng(lat, lon),
-              zoom: 16,
-            ),
-            markers: {
-              Marker(
-                markerId: MarkerId('currentLocation'),
-                position: LatLng(lat, lon),
-                infoWindow: InfoWindow(title: 'Posisi Anda'),
-              ),
-            },
-            myLocationEnabled: true,
-            zoomControlsEnabled: false,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Tutup'),
-          ),
-        ],
-      ),
-    );
-  }
-
-
 }

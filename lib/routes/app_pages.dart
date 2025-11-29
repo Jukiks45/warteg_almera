@@ -8,6 +8,8 @@ import '../modules/cart/bindings/cart_binding.dart';
 import '../modules/cart/views/cart_view.dart';
 import '../modules/order_history/bindings/order_history_binding.dart';
 import '../modules/order_history/views/order_history_view.dart';
+import '../modules/location/bindings/location_binding.dart';
+import '../modules/location/views/location_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -37,5 +39,10 @@ class AppPages {
       page: () => const OrderHistoryView(),
       binding: OrderHistoryBinding(),
     ),
-  ];
+    GetPage(
+      name: AppRoutes.lokasi,
+      page: () => const LocationView(),
+      binding: LocationBinding(),
+    ),
+  ]; 
 }
