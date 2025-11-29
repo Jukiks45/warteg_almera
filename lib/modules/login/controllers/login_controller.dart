@@ -56,6 +56,7 @@ class LoginController extends GetxController {
     isLoading.value = true;
 
     try {
+      print('🔐 Login attempt for: $email');
       final user = await _provider.login(email, password);
 
       isLoading.value = false;
@@ -75,13 +76,42 @@ class LoginController extends GetxController {
       }
     } on Exception catch (e) {
       isLoading.value = false;
-      final cleanMessage = e.toString().replaceAll("Exception: ", "");
-      print('❌ Login error: $cleanMessage');
+      var cleanMessage = e.toString().replaceAll("Exception: ", "");
+      print('❌ Login Exception: $cleanMessage');
+      
+      // Deteksi error connection-related
+      final errorLower = cleanMessage.toLowerCase();
+      if (errorLower.contains('clientexception') ||
+          errorLower.contains('socketexception') ||
+          errorLower.contains('socket') ||
+          errorLower.contains('failed host lookup') ||
+          errorLower.contains('host lookup') ||
+          errorLower.contains('no address') ||
+          errorLower.contains('network') ||
+          errorLower.contains('connection')) {
+        cleanMessage = "Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.";
+      }
+      
       _error(cleanMessage);
     } catch (e) {
       isLoading.value = false;
       print('❌ Unexpected login error: $e');
-      _error("Terjadi kesalahan tidak terduga");
+      print('❌ Error type: ${e.runtimeType}');
+      
+      // Deteksi error connection-related di catch umum
+      final errorStr = e.toString().toLowerCase();
+      if (errorStr.contains('clientexception') ||
+          errorStr.contains('socketexception') ||
+          errorStr.contains('socket') ||
+          errorStr.contains('failed host lookup') ||
+          errorStr.contains('host lookup') ||
+          errorStr.contains('no address') ||
+          errorStr.contains('network') ||
+          errorStr.contains('connection')) {
+        _error("Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.");
+      } else {
+        _error("Terjadi kesalahan tidak terduga");
+      }
     }
   }
 
@@ -121,13 +151,42 @@ class LoginController extends GetxController {
       }
     } on Exception catch (e) {
       isLoading.value = false;
-      final cleanMessage = e.toString().replaceAll("Exception: ", "");
-      print('❌ Registration error: $cleanMessage');
+      var cleanMessage = e.toString().replaceAll("Exception: ", "");
+      print('❌ Registration Exception: $cleanMessage');
+      
+      // Deteksi error connection-related
+      final errorLower = cleanMessage.toLowerCase();
+      if (errorLower.contains('clientexception') ||
+          errorLower.contains('socketexception') ||
+          errorLower.contains('socket') ||
+          errorLower.contains('failed host lookup') ||
+          errorLower.contains('host lookup') ||
+          errorLower.contains('no address') ||
+          errorLower.contains('network') ||
+          errorLower.contains('connection')) {
+        cleanMessage = "Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.";
+      }
+      
       _error(cleanMessage);
     } catch (e) {
       isLoading.value = false;
       print('❌ Unexpected registration error: $e');
-      _error("Terjadi kesalahan tidak terduga");
+      print('❌ Error type: ${e.runtimeType}');
+      
+      // Deteksi error connection-related di catch umum
+      final errorStr = e.toString().toLowerCase();
+      if (errorStr.contains('clientexception') ||
+          errorStr.contains('socketexception') ||
+          errorStr.contains('socket') ||
+          errorStr.contains('failed host lookup') ||
+          errorStr.contains('host lookup') ||
+          errorStr.contains('no address') ||
+          errorStr.contains('network') ||
+          errorStr.contains('connection')) {
+        _error("Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.");
+      } else {
+        _error("Terjadi kesalahan tidak terduga");
+      }
     }
   }
 
