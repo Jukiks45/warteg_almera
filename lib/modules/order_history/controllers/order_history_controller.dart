@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
@@ -61,6 +63,13 @@ class OrderHistoryController extends GetxController {
       }
 
       isLoading.value = false;
+    } on SocketException catch (e) {
+      isLoading.value = false;
+      isError.value = true;
+      errorMessage.value = 'Tidak ada koneksi internet. Periksa koneksi Anda.';
+      print('❌ No Internet Connection: $e');
+      orders.value = [];
+      orderItems.clear();
     } catch (e) {
       isLoading.value = false;
       isError.value = true;
@@ -92,6 +101,9 @@ class OrderHistoryController extends GetxController {
           })
           .whereType<OrderItemModel>()
           .toList();
+    } on SocketException catch (e) {
+      print('❌ No Internet Connection for order items: $e');
+      orderItems[orderId] = [];
     } catch (e) {
       print('Error fetching order items for $orderId: $e');
       orderItems[orderId] = [];

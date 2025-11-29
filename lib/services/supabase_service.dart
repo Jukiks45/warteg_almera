@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
@@ -44,6 +46,11 @@ class SupabaseService extends GetxService {
       }
 
       return this;
+    } on SocketException catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ No Internet Connection: $e');
+      }
+      throw Exception('Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
     } catch (e) {
       if (e.toString().contains('FileSystemException') ||
           e.toString().contains('.env')) {

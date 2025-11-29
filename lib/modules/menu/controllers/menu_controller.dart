@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:get/get.dart';
 import '../models/menu_model.dart';
 import '../../../services/api_service.dart';
@@ -40,6 +42,17 @@ class MenuController extends GetxController {
       Get.defaultDialog(
         title: 'Response Time (Dio Async-Await)',
         middleText: 'Loaded in ${responseTime.toStringAsFixed(2)} s ✅',
+        textConfirm: 'Close',
+        onConfirm: () => Get.back(),
+      );
+    } on SocketException {
+      stopwatch.stop();
+      isError.value = true;
+      errorMessage.value = 'Tidak ada koneksi internet. Periksa koneksi Anda.';
+
+      Get.defaultDialog(
+        title: 'Error Koneksi',
+        middleText: 'Tidak ada koneksi internet.\nPeriksa koneksi Anda dan coba lagi.',
         textConfirm: 'Close',
         onConfirm: () => Get.back(),
       );

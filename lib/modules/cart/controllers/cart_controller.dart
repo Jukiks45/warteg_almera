@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -196,6 +198,12 @@ class CartController extends GetxController {
       clearCart();
 
       return orderId;
+    } on SocketException catch (e) {
+      print('❌ No Internet Connection: $e');
+      throw Exception('Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
+    } on PostgrestException catch (e) {
+      print('❌ Postgrest error: ${e.message}');
+      throw Exception('Error database: ${e.message}');
     } catch (e) {
       print('❌ Error saving order to Supabase: $e');
       rethrow;

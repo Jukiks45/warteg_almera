@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
 import '../modules/menu/models/menu_model.dart';
@@ -85,9 +87,31 @@ class ApiService {
         'menuList': menus,
         'selectedMenu': menuDetail,
       };
+    } on DioException catch (e) {
+      print('❌ Dio ERROR: ${e.type} - ${e.message}');
+      if (e.type == DioExceptionType.connectionTimeout || 
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        throw Exception('Koneksi timeout. Jaringan Anda mungkin lambat.');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw Exception('Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
+      } else if (e.response != null) {
+        throw Exception('Error dari server: ${e.response?.statusCode}');
+      } else {
+        throw Exception('Gagal terhubung ke server. Periksa koneksi internet Anda.');
+      }
+    } on SocketException catch (e) {
+      print('❌ No Internet Connection: $e');
+      throw Exception('Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
+    } on TimeoutException catch (e) {
+      print('❌ Request Timeout: $e');
+      throw Exception('Koneksi timeout. Jaringan Anda mungkin lambat.');
+    } on FormatException catch (e) {
+      print('❌ Format Error: $e');
+      throw Exception('Format data tidak valid dari server.');
     } catch (e) {
-      print('❌ HTTP ERROR: $e');
-      throw Exception('Error in HTTP chained request: $e');
+      print('❌ Dio ERROR: $e');
+      throw Exception('Error in Dio chained request: $e');
     }
   }
 
@@ -220,6 +244,28 @@ class ApiService {
       }
 
       return {'menuList': menus, 'selectedMenu': menuDetail};
+    } on DioException catch (e) {
+      print('❌ Dio ERROR: ${e.type} - ${e.message}');
+      if (e.type == DioExceptionType.connectionTimeout || 
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        throw Exception('Koneksi timeout. Jaringan Anda mungkin lambat.');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw Exception('Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
+      } else if (e.response != null) {
+        throw Exception('Error dari server: ${e.response?.statusCode}');
+      } else {
+        throw Exception('Gagal terhubung ke server. Periksa koneksi internet Anda.');
+      }
+    } on SocketException catch (e) {
+      print('❌ No Internet Connection: $e');
+      throw Exception('Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
+    } on TimeoutException catch (e) {
+      print('❌ Request Timeout: $e');
+      throw Exception('Koneksi timeout. Jaringan Anda mungkin lambat.');
+    } on FormatException catch (e) {
+      print('❌ Format Error: $e');
+      throw Exception('Format data tidak valid dari server.');
     } catch (e) {
       throw Exception('Error in Dio chained request: $e');
     }
@@ -282,7 +328,22 @@ class ApiService {
         onError('Error processing menu list: $e');
       }
     }).catchError((e) {
-      onError('Error getting menu list: $e');
+      print('❌ Dio Callback ERROR: $e');
+      if (e is DioException) {
+        if (e.type == DioExceptionType.connectionTimeout || 
+            e.type == DioExceptionType.receiveTimeout ||
+            e.type == DioExceptionType.sendTimeout) {
+          onError('Koneksi timeout. Jaringan Anda mungkin lambat.');
+        } else if (e.type == DioExceptionType.connectionError) {
+          onError('Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
+        } else {
+          onError('Gagal terhubung ke server. Periksa koneksi internet Anda.');
+        }
+      } else if (e is SocketException) {
+        onError('Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
+      } else {
+        onError('Error getting menu list: $e');
+      }
     });
   }
 }
