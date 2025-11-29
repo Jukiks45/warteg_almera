@@ -9,7 +9,6 @@ import '../../cart/controllers/cart_controller.dart';
 import '../../../providers/login_providers.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-
 class MenuView extends GetView<menu.MenuController> {
   const MenuView({super.key});
 
@@ -67,10 +66,17 @@ class MenuView extends GetView<menu.MenuController> {
             onPressed: () => controller.fetchMenuWithDetailHttp(),
             tooltip: 'Reload Async-Await',
           ),
+          // IconButton(
+          //   icon: const Icon(Icons.swap_horiz),
+          //   onPressed: () => controller.fetchMenuWithDetailCallbackHttp(),
+          //   tooltip: 'Reload Callback Chaining',
+          // ),
           IconButton(
-            icon: const Icon(Icons.swap_horiz),
-            onPressed: () => controller.fetchMenuWithDetailCallbackHttp(),
-            tooltip: 'Reload Callback Chaining',
+            icon: const Icon(Icons.map),
+            onPressed: () {
+              // Get.toNamed(Routes.LOCATION);
+            },
+            tooltip: 'Buka Maps',
           ),
           IconButton(
             icon: const Icon(Icons.logout),
