@@ -65,20 +65,32 @@ class LocationController extends GetxController {
   void startLocationTracking() async {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) return;
+      if (!serviceEnabled) {
+        debugPrint('⚠️ Location service not enabled');
+        return;
+      }
 
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) return;
+        if (permission == LocationPermission.denied) {
+          debugPrint('⚠️ Location permission denied');
+          return;
+        }
       }
-      if (permission == LocationPermission.deniedForever) return;
+
+      if (permission == LocationPermission.deniedForever) {
+        debugPrint('⚠️ Location permission denied forever');
+        return;
+      }
+      print('🎯 Starting location tracking with mode: ${locationMode.value}');
 
       final locationSettings = _getLocationSettings();
 
       _positionStreamSubscription = Geolocator.getPositionStream(
         locationSettings: locationSettings,
       ).listen((Position position) async {
+        debugPrint('📍 Location updated: ${position.latitude}, ${position.longitude}');
         // lightweight updates
         currentPosition.value = position;
         currentLatLng.value = LatLng(position.latitude, position.longitude);
@@ -100,7 +112,7 @@ class LocationController extends GetxController {
         updateLocationToSupabase(position.latitude, position.longitude);
       });
     } catch (e) {
-      print('ERROR tracking: $e');
+      debugPrint('❌ Error starting location tracking: $e');
     }
   }
 
@@ -123,6 +135,7 @@ class LocationController extends GetxController {
 
   Future<void> switchLocationMode(String mode) async {
     if (locationMode.value == mode) return;
+    print('🔄 Switching location mode to: $mode');
     locationMode.value = mode;
 
     // restart stream
@@ -134,7 +147,7 @@ class LocationController extends GetxController {
     await getCurrentLocation();
 
     Get.snackbar('Mode Lokasi', 'Berubah ke ${currentAccuracyText.value}',
-        snackPosition: SnackPosition.BOTTOM);
+        snackPosition: SnackPosition.BOTTOM,duration: const Duration(seconds: 2));
   }
 
   // -----------------------
@@ -163,27 +176,28 @@ class LocationController extends GetxController {
     // user marker (circle blue)
     if (currentPosition.value != null) {
       newMarkers.add(
-      Marker(
-        point: LatLng(currentPosition.value!.latitude, currentPosition.value!.longitude),
-        width: 48,
-        height: 48,
-        // some older flutter_map Marker implementations use 'child' instead of 'builder'
-        child: Container(
-          alignment: Alignment.center,
+        Marker(
+          point: LatLng(currentPosition.value!.latitude,
+              currentPosition.value!.longitude),
+          width: 48,
+          height: 48,
+          // some older flutter_map Marker implementations use 'child' instead of 'builder'
           child: Container(
-            width: 20,
-            height: 20,
-            decoration: BoxDecoration(
-              color: Colors.blue,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 3),
-              boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
+            alignment: Alignment.center,
+            child: Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: Colors.blue,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 3),
+                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
+              ),
             ),
           ),
         ),
-      ),
-    );
-  }
+      );
+    }
 
     // warteg marker (icon red)
     if (targetLocation.value != null) {
