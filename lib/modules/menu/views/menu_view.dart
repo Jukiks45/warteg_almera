@@ -81,13 +81,7 @@ class MenuView extends GetView<menu.MenuController> {
           //   onPressed: () => controller.fetchMenuWithDetailCallbackHttp(),
           //   tooltip: 'Reload Callback Chaining',
           // ),
-          IconButton(
-            icon: const Icon(Icons.map),
-            onPressed: () {
-              Get.toNamed(AppRoutes.lokasi);
-            },
-            tooltip: 'Buka Maps',
-          ),
+          
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
