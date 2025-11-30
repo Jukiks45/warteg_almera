@@ -90,7 +90,8 @@ class LocationController extends GetxController {
       _positionStreamSubscription = Geolocator.getPositionStream(
         locationSettings: locationSettings,
       ).listen((Position position) async {
-        debugPrint('📍 Location updated: ${position.latitude}, ${position.longitude}');
+        debugPrint(
+            '📍 Location updated: ${position.latitude}, ${position.longitude}');
         // lightweight updates
         currentPosition.value = position;
         currentLatLng.value = LatLng(position.latitude, position.longitude);
@@ -147,7 +148,8 @@ class LocationController extends GetxController {
     await getCurrentLocation();
 
     Get.snackbar('Mode Lokasi', 'Berubah ke ${currentAccuracyText.value}',
-        snackPosition: SnackPosition.BOTTOM,duration: const Duration(seconds: 2));
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2));
   }
 
   // -----------------------
@@ -297,7 +299,7 @@ class LocationController extends GetxController {
     try {
       mapController.move(LatLng(position.latitude, position.longitude), 15.0);
     } catch (e) {
-      // ignore if mapController not ready
+      debugPrint('⚠️ Map controller not ready yet: $e');
     }
   }
 
@@ -333,7 +335,8 @@ class LocationController extends GetxController {
       _computeDistanceToTarget(pos);
       fetchRouteFromOSRM();
       refreshMarkers();
-
+      
+      _centerMapToCurrentPosition(pos);
       await getAddressFromCoordinates(pos.latitude, pos.longitude);
       await updateLocationToSupabase(pos.latitude, pos.longitude);
 
