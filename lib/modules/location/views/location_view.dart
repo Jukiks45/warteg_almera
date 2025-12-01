@@ -175,6 +175,15 @@ class LocationView extends GetView<LocationController> {
                                           .toStringAsFixed(6)),
                                   _buildInfoRow('Akurasi',
                                       '${controller.currentPosition.value!.accuracy.toStringAsFixed(1)} m'),
+                                  _buildInfoRow('Kecepatan',
+                                      '${controller.currentPosition.value!.speed.toStringAsFixed(1)} m/s'),
+                                  _buildInfoRow(
+                                      'Waktu Data',
+                                      controller
+                                          .currentPosition.value!.timestamp
+                                          .toLocal()
+                                          .toString()
+                                          .substring(11, 19)),
                                   _buildInfoRow('Mode',
                                       controller.currentAccuracyText.value),
                                 ]),

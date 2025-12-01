@@ -106,7 +106,7 @@ class LocationController extends GetxController {
         refreshMarkers();
 
         // center map
-        _centerMapToCurrentPosition(position);
+        // _centerMapToCurrentPosition(position);
 
         // heavier ops
         getAddressFromCoordinates(position.latitude, position.longitude);
@@ -279,8 +279,9 @@ class LocationController extends GetxController {
       }
 
       final List<LatLng> routePoints = coords.map<LatLng>((c) {
-        final lon = (c as List)[0] as num;
-        final lat = (c as List)[1] as num;
+        final coord = c as List<dynamic>;
+        final lon = coord[0] as num;
+        final lat = coord[1] as num;
         return LatLng(lat.toDouble(), lon.toDouble());
       }).toList();
 
@@ -335,7 +336,7 @@ class LocationController extends GetxController {
       _computeDistanceToTarget(pos);
       fetchRouteFromOSRM();
       refreshMarkers();
-      
+
       _centerMapToCurrentPosition(pos);
       await getAddressFromCoordinates(pos.latitude, pos.longitude);
       await updateLocationToSupabase(pos.latitude, pos.longitude);
@@ -379,6 +380,7 @@ class LocationController extends GetxController {
         'longitude': lon,
         'updated_at': DateTime.now().toIso8601String(),
       });
+      debugPrint("supabse masuk");
     } catch (e) {
       print('Supabase update error: $e');
     }
