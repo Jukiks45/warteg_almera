@@ -9,7 +9,12 @@ const AndroidNotificationChannel channel = AndroidNotificationChannel(
   'High Importance Notifications', // Nama Channel (terlihat di setting HP)
   description: 'This channel is used for important order status updates.',
   importance: Importance.max,
+<<<<<<< HEAD
   sound: RawResourceAndroidNotificationSound('hidupjokowi'), // NAMA FILE AUDIO (TANPA EKSTENSI)
+=======
+  sound: RawResourceAndroidNotificationSound(
+      'hidupjokowi'), // NAMA FILE AUDIO (TANPA EKSTENSI)
+>>>>>>> 09a271ee734d14667f38541f312a5dc22621dff8
 );
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -20,7 +25,7 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Lakukan inisialisasi Firebase lagi di sini jika diperlukan,
   // tetapi biasanya sudah ditangani oleh GetX/main.dart
-  
+
   print('Handling a background message: ${message.messageId}');
   print('Data: ${message.data}');
 
@@ -29,25 +34,35 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 class NotificationService extends GetxService {
   Future<NotificationService> init() async {
-    // 1. Setup Background Handler
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    try {
+      print('🔔 STARTING NotificationService Initialization...');
 
-    // 2. Setup Local Notification Plugin (Android/iOS Settings)
-    await _setupLocalNotifications();
+      // 1. Setup Background Handler
+      FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
-    // 3. Setup Foreground Handler (Untuk Eksperimen 1)
-    _setupForegroundHandler();
-    
-    // 4. Handle Notifikasi Saat Aplikasi Dibuka dari Terminated (Eksperimen 3)
-    _handleInitialMessage();
+      // 2. Setup Local Notification Plugin (Android/iOS Settings)
+      await _setupLocalNotifications();
 
-    // 5. Handle Notifikasi Saat Aplikasi Dibuka dari Background (Eksperimen 2)
-    _handleMessageOpenedApp();
-    
-    // 6. Dapatkan FCM Token
-    _getFCMToken();
+      // 3. Setup Foreground Handler (Untuk Eksperimen 1)
+      _setupForegroundHandler();
 
-    return this;
+      // 4. Handle Notifikasi Saat Aplikasi Dibuka dari Terminated (Eksperimen 3)
+      _handleInitialMessage();
+
+      // 5. Handle Notifikasi Saat Aplikasi Dibuka dari Background (Eksperimen 2)
+      _handleMessageOpenedApp();
+
+      // 6. Dapatkan FCM Token
+      _getFCMToken();
+
+      print('✅ [SERVICE] Setup Notifikasi dan FCM Token diminta.');
+      return this;
+    } catch (e, stacktrace) {
+      // Tangkap error jika terjadi di dalam inisialisasi
+      print('❌ KRITIS: Gagal inisialisasi NotificationService: $e');
+      print('STACK: $stacktrace');
+      return this; // Return this agar aplikasi tidak crash total
+    }
   }
 
   // Metode untuk inisialisasi FLNP
@@ -58,15 +73,16 @@ class NotificationService extends GetxService {
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
 
-    const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
-    
+    const initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
     // Setup iOS
     const initializationSettingsDarwin = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
     );
-    
+
     final initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsDarwin,
@@ -79,7 +95,7 @@ class NotificationService extends GetxService {
         // TODO: Sama seperti logic navigasi FCM (Eksperimen 2/3)
       },
     );
-    
+
     // Meminta Izin
     await FirebaseMessaging.instance.requestPermission(
       alert: true,
@@ -91,13 +107,13 @@ class NotificationService extends GetxService {
       sound: true,
     );
   }
-  
+
   // Metode untuk Eksperimen 1
   void _setupForegroundHandler() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('--- FOREGROUND MESSAGE RECEIVED ---');
       print('Message data: ${message.data}');
-      
+
       // Menggunakan local notifications untuk menampilkan Heads-up banner
       flutterLocalNotificationsPlugin.show(
         message.hashCode, // ID Notifikasi
@@ -127,10 +143,11 @@ class NotificationService extends GetxService {
       // Contoh: Get.toNamed(AppRoutes.ORDER_DETAIL, arguments: message.data['order_id']);
     });
   }
-  
+
   // TODO: Metode untuk Eksperimen 3 (Navigasi dari Terminated)
   void _handleInitialMessage() async {
-    RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) {
       print('--- GET INITIAL MESSAGE (Eksperimen 3) ---');
       // Panggil Get.toNamed untuk navigasi saat aplikasi baru dibuka
