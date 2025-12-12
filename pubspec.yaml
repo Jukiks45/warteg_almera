@@ -23,6 +23,7 @@ dependencies:
   path_provider: ^2.1.4
   image_picker: ^1.1.2
   cupertino_icons: ^1.0.8
+  firebase_core: ^4.2.1
 
   
 
