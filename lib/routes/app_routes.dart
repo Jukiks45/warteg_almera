@@ -5,4 +5,5 @@ abstract class AppRoutes {
   static const cart = '/cart';
   static const orderHistory = '/order-history';
   static const lokasi = '/location';
+  static const promo = '/promo';
 }
