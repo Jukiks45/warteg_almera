@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "585949247450",
+    "project_id": "warteg-almera",
+    "storage_bucket": "warteg-almera.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:585949247450:android:e6c388bec5d7970dadb2e3",
+        "android_client_info": {
+          "package_name": "com.example.warteg_almera"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPJYBJD2_y2QH7PYJtoLMnKXM4_G2xyOI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

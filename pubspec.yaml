@@ -23,6 +23,9 @@ dependencies:
   path_provider: ^2.1.4
   image_picker: ^1.1.2
   cupertino_icons: ^1.0.8
+<<<<<<< HEAD
+  firebase_core: ^4.2.1
+=======
   geolocator: ^10.1.0
   geocoding: ^3.0.0
   permission_handler: ^11.0.0
@@ -31,6 +34,7 @@ dependencies:
   
   
 
+>>>>>>> 9a260e0f114362d0912b539c7ca197393a1cca63
 
   
 

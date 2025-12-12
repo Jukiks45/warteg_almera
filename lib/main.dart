@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 import 'routes/app_pages.dart';
 import 'routes/app_routes.dart';
@@ -86,6 +88,9 @@ Future<void> initServices() async {
 Future<void> main() async {
   // Ensure Flutter engine and GetX are ready
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+   options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   // Initialize all critical services before running the app
   try {
