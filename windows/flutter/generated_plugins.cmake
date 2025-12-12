@@ -5,11 +5,8 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   app_links
   file_selector_windows
-<<<<<<< HEAD
   firebase_core
-=======
   geolocator_windows
->>>>>>> 9a260e0f114362d0912b539c7ca197393a1cca63
   isar_flutter_libs
   permission_handler_windows
   url_launcher_windows
