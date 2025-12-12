@@ -12,6 +12,7 @@ import 'services/local_storage_service.dart';
 import 'services/supabase_service.dart';
 import 'services/auth_session_service.dart';
 import 'providers/login_providers.dart';
+import 'services/notification_service.dart';
 
 /// Initializes all services in the correct order before running the app.
 Future<void> initServices() async {
@@ -25,7 +26,8 @@ Future<void> initServices() async {
     debugPrint("✅ [1/5] .env file loaded");
   } catch (e) {
     debugPrint("🛑 CRITICAL: FAILED to load .env file. $e");
-    throw Exception("Could not load .env file. Please ensure 'warteg_almera/.env' exists and is correctly formatted.");
+    throw Exception(
+        "Could not load .env file. Please ensure 'warteg_almera/.env' exists and is correctly formatted.");
   }
 
   // 2. Initialize LocalStorageService PERTAMA (ini yang penting!)
@@ -33,10 +35,10 @@ Future<void> initServices() async {
     debugPrint("🔧 [2/5] Initializing LocalStorageService...");
     await Get.putAsync(() => LocalStorageService().init(), permanent: true);
     debugPrint("✅ [2/5] LocalStorageService initialized and registered");
-  } on Exception catch(e) {
+  } on Exception catch (e) {
     debugPrint("🛑 CRITICAL: FAILED LocalStorageService init: ${e.toString()}");
     throw Exception("Gagal inisialisasi database lokal: ${e.toString()}");
-  } catch(e) {
+  } catch (e) {
     debugPrint("🛑 CRITICAL: FAILED LocalStorageService init: $e");
     throw Exception("Gagal inisialisasi penyimpanan lokal: $e");
   }
@@ -47,7 +49,8 @@ Future<void> initServices() async {
     await Get.putAsync(() => SupabaseService().init(), permanent: true);
     debugPrint("✅ [3/5] SupabaseService initialized and registered");
   } on Exception catch (e) {
-    debugPrint("🛑 CRITICAL: FAILED to initialize SupabaseService: ${e.toString()}");
+    debugPrint(
+        "🛑 CRITICAL: FAILED to initialize SupabaseService: ${e.toString()}");
     throw Exception("Gagal koneksi ke server: ${e.toString()}");
   } catch (e) {
     debugPrint("🛑 CRITICAL: FAILED to initialize SupabaseService: $e");
@@ -59,10 +62,10 @@ Future<void> initServices() async {
     debugPrint("🔧 [4/5] Initializing AuthSessionService...");
     await Get.putAsync(() => AuthSessionService().init(), permanent: true);
     debugPrint("✅ [4/5] AuthSessionService initialized");
-  } on Exception catch(e) {
+  } on Exception catch (e) {
     debugPrint("⚠️ FAILED AuthSessionService init: ${e.toString()}");
     // Non-critical, app can continue without session
-  } catch(e) {
+  } catch (e) {
     debugPrint("⚠️ FAILED AuthSessionService init: $e");
     // Non-critical, app can continue without session
   }
@@ -72,10 +75,10 @@ Future<void> initServices() async {
     debugPrint("🔧 [5/5] Registering LoginProviders...");
     Get.put(LoginProviders(), permanent: true);
     debugPrint("✅ [5/5] LoginProviders registered");
-  } on Exception catch(e) {
+  } on Exception catch (e) {
     debugPrint("⚠️ FAILED LoginProviders init: ${e.toString()}");
     // Non-critical, but auth features won't work
-  } catch(e) {
+  } catch (e) {
     debugPrint("⚠️ FAILED LoginProviders init: $e");
     // Non-critical, but auth features won't work
   }
@@ -89,8 +92,11 @@ Future<void> main() async {
   // Ensure Flutter engine and GetX are ready
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-   options: DefaultFirebaseOptions.currentPlatform,
+    options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // 1. Inisialisasi Global Service (Notifikasi)
+  await Get.putAsync(() => NotificationService().init(), permanent: true);
 
   // Initialize all critical services before running the app
   try {
@@ -113,11 +119,12 @@ class MyApp extends StatelessWidget {
     // Check if user is already logged in
     final authSession = Get.find<AuthSessionService>();
     final isLoggedIn = authSession.isLoggedIn();
-    
+
     debugPrint("📱 Building MyApp...");
     debugPrint("🔐 User logged in: $isLoggedIn");
-    debugPrint("🏠 Initial route: ${isLoggedIn ? AppRoutes.menu : AppRoutes.login}");
-    
+    debugPrint(
+        "🏠 Initial route: ${isLoggedIn ? AppRoutes.menu : AppRoutes.login}");
+
     return GetMaterialApp(
       title: 'Warung Makan',
       theme: ThemeData(
