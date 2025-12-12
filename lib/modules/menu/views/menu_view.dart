@@ -3,11 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/menu_controller.dart' as menu;
-import '../models/menu_model.dart'; // Wajib ada
+import '../models/menu_model.dart';
 import '../../../routes/app_routes.dart';
 import '../../cart/controllers/cart_controller.dart';
 import '../../../providers/login_providers.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+
 
 
 class MenuView extends GetView<menu.MenuController> {
@@ -68,10 +69,19 @@ class MenuView extends GetView<menu.MenuController> {
             tooltip: 'Reload Async-Await',
           ),
           IconButton(
-            icon: const Icon(Icons.swap_horiz),
-            onPressed: () => controller.fetchMenuWithDetailCallbackHttp(),
-            tooltip: 'Reload Callback Chaining',
+            icon: const Icon(Icons.location_on),
+            onPressed: () {
+              Get.toNamed(AppRoutes.lokasi);
+            },
+            tooltip: 'Lokasi Saya',
           ),
+
+          // IconButton(
+          //   icon: const Icon(Icons.swap_horiz),
+          //   onPressed: () => controller.fetchMenuWithDetailCallbackHttp(),
+          //   tooltip: 'Reload Callback Chaining',
+          // ),
+          
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
