@@ -14,6 +14,7 @@ import 'services/auth_session_service.dart';
 import 'providers/login_providers.dart';
 import 'services/notification_service.dart'; // Menggunakan nama NotificationService Anda
 
+
 /// Initializes all services in the correct order before running the app.
 /// Fungsi ini tetap sama seperti sebelumnya, karena sudah memiliki print/debugPrint yang baik.
 Future<void> initServices() async {
@@ -24,96 +25,98 @@ Future<void> initServices() async {
   // 1. Load .env file first
   try {
     await dotenv.load(fileName: ".env");
-    debugPrint("✅ [1/5] .env file loaded");
+    debugPrint("[1/5] .env file loaded");
   } catch (e) {
-    debugPrint("❌ CRITICAL: FAILED to load .env file. $e");
+    debugPrint("CRITICAL: FAILED to load .env file. $e");
     throw Exception(
         "Could not load .env file. Please ensure 'warteg_almera/.env' exists and is correctly formatted.");
   }
 
   // 2. Initialize LocalStorageService
   try {
-    debugPrint("➡️ [2/5] Initializing LocalStorageService...");
+    debugPrint(" [2/5] Initializing LocalStorageService...");
     await Get.putAsync(() => LocalStorageService().init(), permanent: true);
-    debugPrint("✅ [2/5] LocalStorageService initialized and registered");
+    debugPrint("[2/5] LocalStorageService initialized and registered");
   } on Exception catch (e) {
-    debugPrint("❌ CRITICAL: FAILED LocalStorageService init: ${e.toString()}");
+    debugPrint(
+        "CRITICAL: FAILED LocalStorageService init: ${e.toString()}");
     throw Exception("Gagal inisialisasi database lokal: ${e.toString()}");
   } catch (e) {
-    debugPrint("❌ CRITICAL: FAILED LocalStorageService init: $e");
+    debugPrint("CRITICAL: FAILED LocalStorageService init: $e");
     throw Exception("Gagal inisialisasi penyimpanan lokal: $e");
   }
 
   // 3. Initialize SupabaseService
   try {
-    debugPrint("➡️ [3/5] Initializing SupabaseService...");
+    debugPrint(" [3/5] Initializing SupabaseService...");
     await Get.putAsync(() => SupabaseService().init(), permanent: true);
-    debugPrint("✅ [3/5] SupabaseService initialized and registered");
+    debugPrint("Γ£à [3/5] SupabaseService initialized and registered");
   } on Exception catch (e) {
     debugPrint(
-        "❌ CRITICAL: FAILED to initialize SupabaseService: ${e.toString()}");
+        "Γ¥î CRITICAL: FAILED to initialize SupabaseService: ${e.toString()}");
     throw Exception("Gagal koneksi ke server: ${e.toString()}");
   } catch (e) {
-    debugPrint("❌ CRITICAL: FAILED to initialize SupabaseService: $e");
+    debugPrint("Γ¥î CRITICAL: FAILED to initialize SupabaseService: $e");
     throw Exception("Gagal inisialisasi server: $e");
   }
 
   // 4. Initialize AuthSessionService
   try {
-    debugPrint("➡️ [4/5] Initializing AuthSessionService...");
+    debugPrint(" [4/5] Initializing AuthSessionService...");
     await Get.putAsync(() => AuthSessionService().init(), permanent: true);
-    debugPrint("✅ [4/5] AuthSessionService initialized");
+    debugPrint("Γ£à [4/5] AuthSessionService initialized");
   } on Exception catch (e) {
-    debugPrint("⚠️ FAILED AuthSessionService init: ${e.toString()}");
+    debugPrint(" FAILED AuthSessionService init: ${e.toString()}");
   } catch (e) {
-    debugPrint("⚠️ FAILED AuthSessionService init: $e");
+    debugPrint(" FAILED AuthSessionService init: $e");
   }
 
   // 5. Initialize LoginProviders
   try {
-    debugPrint("➡️ [5/5] Registering LoginProviders...");
+    debugPrint(" [5/5] Registering LoginProviders...");
     Get.put(LoginProviders(), permanent: true);
-    debugPrint("✅ [5/5] LoginProviders registered");
+    debugPrint("Γ£à [5/5] LoginProviders registered");
   } on Exception catch (e) {
-    debugPrint("⚠️ FAILED LoginProviders init: ${e.toString()}");
+    debugPrint(" FAILED LoginProviders init: ${e.toString()}");
   } catch (e) {
-    debugPrint("⚠️ FAILED LoginProviders init: $e");
+    debugPrint(" FAILED LoginProviders init: $e");
   }
 
   debugPrint("=".padRight(60, '='));
-  debugPrint("✅ All Core Services Initialized Successfully");
+  debugPrint("Γ£à All Core Services Initialized Successfully");
   debugPrint("=".padRight(60, '='));
 }
 
 Future<void> main() async {
   // Ensure Flutter engine and GetX are ready
   WidgetsFlutterBinding.ensureInitialized();
-  
+
+
   // Firebase initialization must be done outside try-catch
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  
+
   // Gunakan try-catch di sini untuk menangkap kegagalan yang berasal dari notifikasi atau initServices
   try {
-    // 1. Inisialisasi Global Service (Notifikasi)
+    // 2. Inisialisasi Global Service (Notifikasi)
     // PENTING: Panggil init() di sini untuk memastikan FCM/LocalNotif setup terjadi
     await Get.putAsync(() => NotificationService().init(), permanent: true);
-    
-    // PRINT SUCCESS JIKA init() berhasil
-    print('✅ [MAIN] NotificationService berhasil diinisialisasi dan siap digunakan.');
 
-    // 2. Inisialisasi semua layanan kritis lainnya
+    // PRINT SUCCESS JIKA init() berhasil
+    print('[MAIN] NotificationService berhasil diinisialisasi dan siap digunakan.');
+
+    // 3. Inisialisasi semua layanan kritis lainnya
     await initServices();
-    
-    // 3. Jalankan aplikasi
+
+    // 4. Jalankan aplikasi
     runApp(const MyApp());
   } catch (e, stackTrace) {
     // Jika ada CRITICAL ERROR (misal: Firebase/Supabase/Notif gagal)
-    debugPrint('❌ CRITICAL ERROR DURING STARTUP:');
+    debugPrint('CRITICAL ERROR DURING STARTUP:');
     debugPrint(e.toString());
     debugPrint(stackTrace.toString());
-    
+
     // Tampilkan layar error yang elegan
     runApp(ErrorApp(error: e.toString()));
     return; // Stop further execution

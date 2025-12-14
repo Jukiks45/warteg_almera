@@ -1,68 +1,73 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:get/get.dart'; // Import GetX
+import 'package:get/get.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
-// --- 1. Definisi Custom Sound Channel (Android) ---
+// --- 1. Custom Sound Channel Definition (Android) ---
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
-  'high_importance_channel', // ID Channel
-  'High Importance Notifications', // Nama Channel (terlihat di setting HP)
+  'high_importance_channel',
+  'High Importance Notifications',
   description: 'This channel is used for important order status updates.',
   importance: Importance.max,
-  sound: RawResourceAndroidNotificationSound(
-      'hidupjokowi'), // NAMA FILE AUDIO (TANPA EKSTENSI)
+  sound: RawResourceAndroidNotificationSound('hidupjokowi'),
 );
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
-
-// --- 2. Background Handler (Wajib untuk Eksperimen 3) ---
+// --- 2. Background Message Handler (Top-level function) ---
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Lakukan inisialisasi Firebase lagi di sini jika diperlukan,
-  // tetapi biasanya sudah ditangani oleh GetX/main.dart
-
   print('Handling a background message: ${message.messageId}');
-  print('Data: ${message.data}');
-
-  // TODO: Implementasi navigasi untuk Terminated/Background di sini
+  // TODO: Implement navigation/data handling for Terminated/Background state
 }
 
 class NotificationService extends GetxService {
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
   Future<NotificationService> init() async {
     try {
-      print('🔔 STARTING NotificationService Initialization...');
-
-      // 1. Setup Background Handler
+      print('>>> Starting NotificationService Initialization...');
+      // ⏰ INIT TIMEZONE
+      tz.initializeTimeZones();
+      tz.setLocalLocation(tz.getLocation('Asia/Jakarta'));
       FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-
-      // 2. Setup Local Notification Plugin (Android/iOS Settings)
       await _setupLocalNotifications();
-
-      // 3. Setup Foreground Handler (Untuk Eksperimen 1)
       _setupForegroundHandler();
-
-      // 4. Handle Notifikasi Saat Aplikasi Dibuka dari Terminated (Eksperimen 3)
       _handleInitialMessage();
-
-      // 5. Handle Notifikasi Saat Aplikasi Dibuka dari Background (Eksperimen 2)
       _handleMessageOpenedApp();
-
-      // 6. Dapatkan FCM Token
       _getFCMToken();
-
-      print('✅ [SERVICE] Setup Notifikasi dan FCM Token diminta.');
+      await scheduleBreakfastReminder();
+      print('✅ [SERVICE] Notification and FCM setup complete.');
       return this;
     } catch (e, stacktrace) {
-      // Tangkap error jika terjadi di dalam inisialisasi
-      print('❌ KRITIS: Gagal inisialisasi NotificationService: $e');
+      print('❌ CRITICAL: Failed to initialize NotificationService: $e');
       print('STACK: $stacktrace');
-      return this; // Return this agar aplikasi tidak crash total
+      return this;
     }
   }
 
-  // Metode untuk inisialisasi FLNP
+  // --- FUNGSI BARU: Uji Suara Kustom (Instan) ---
+  Future<void> showCustomSoundTest() async {
+    // ID 99 adalah ID notifikasi
+    await flutterLocalNotificationsPlugin.show(
+      99,
+      '✅ UJI SUARA KUSTOM BERHASIL',
+      'Ini adalah notifikasi dengan audio "hidupjokowi.mp3" Anda.',
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          // PENTING: Menggunakan CHANNEL ID yang sudah kita definisikan di atas
+          channel.id,
+          channel.name,
+          importance: Importance.max,
+        ),
+      ),
+      payload: 'custom_sound_test',
+    );
+    print('✅ [TEST] Notifikasi Uji Suara Kustom dipicu.');
+  }
+
+  // --- Setup Local Notifications Plugin ---
   Future<void> _setupLocalNotifications() async {
-    // Setup Android
     await flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
@@ -71,7 +76,6 @@ class NotificationService extends GetxService {
     const initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    // Setup iOS
     const initializationSettingsDarwin = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -85,33 +89,113 @@ class NotificationService extends GetxService {
 
     await flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
-      // Handler saat notifikasi lokal diklik
       onDidReceiveNotificationResponse: (NotificationResponse response) {
-        // TODO: Sama seperti logic navigasi FCM (Eksperimen 2/3)
+        print('Local Notification Tapped with payload: ${response.payload}');
       },
     );
 
-    // Meminta Izin
     await FirebaseMessaging.instance.requestPermission(
       alert: true,
-      announcement: false,
       badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
       sound: true,
     );
   }
 
-  // Metode untuk Eksperimen 1
+  Future<void> testDelaySafe({int seconds = 10}) async {
+    print('🧪 DEMO DELAY $seconds detik');
+
+    await Future.delayed(Duration(seconds: seconds));
+
+    flutterLocalNotificationsPlugin.show(
+      777,
+      'TEST DEMO',
+      'Notifikasi muncul setelah $seconds detik',
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          channel.id,
+          'Demo Notification',
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+      ),
+    );
+  }
+  //rill
+  // Future<void> scheduleBreakfastReminder() async {
+  //   const int id = 100;
+
+  //   await flutterLocalNotificationsPlugin.cancel(id);
+
+  //   final now = tz.TZDateTime.now(tz.local);
+  //   var scheduledDate = tz.TZDateTime(
+  //     tz.local,
+  //     now.year,
+  //     now.month,
+  //     now.day,
+  //     7,
+  //   );
+
+  //   if (scheduledDate.isBefore(now)) {
+  //     scheduledDate = scheduledDate.add(const Duration(days: 1));
+  //   }
+
+  //   await flutterLocalNotificationsPlugin.zonedSchedule(
+  //     id,
+  //     'Waktunya Sarapan!',
+  //     'Pukul 07:00. Mulai hari dengan energi terbaik!',
+  //     scheduledDate,
+  //     NotificationDetails(
+  //       android: AndroidNotificationDetails(
+  //         channel.id,
+  //         'Pengingat Sarapan',
+  //         importance: Importance.max,
+  //       ),
+  //     ),
+  //     uiLocalNotificationDateInterpretation:
+  //         UILocalNotificationDateInterpretation.absoluteTime,
+  //     matchDateTimeComponents: DateTimeComponents.time,
+  //   );
+
+  //   print('⏰ Notifikasi RILL dijadwalkan jam 07:00');
+  // }
+  // 
+
+  //test
+  Future<void> scheduleBreakfastReminder() async {
+  const int id = 100;
+
+  await flutterLocalNotificationsPlugin.cancel(id);
+
+  final scheduledDate =
+      tz.TZDateTime.now(tz.local).add(const Duration(minutes: 1));
+
+  print('🧪 TEST MODE');
+  print('⏰ Notif akan muncul di: $scheduledDate');
+
+  await flutterLocalNotificationsPlugin.zonedSchedule(
+    id,
+    'TEST SARAPAN',
+    'Ini test 2 menit setelah sekarang',
+    scheduledDate,
+    NotificationDetails(
+      android: AndroidNotificationDetails(
+        channel.id,
+        'Pengingat Sarapan',
+        importance: Importance.max,
+      ),
+    ),
+    uiLocalNotificationDateInterpretation:
+        UILocalNotificationDateInterpretation.absoluteTime,
+  );
+}
+
+  // --- Handle FCM Foreground (App Terbuka) ---
   void _setupForegroundHandler() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('--- FOREGROUND MESSAGE RECEIVED ---');
-      print('Message data: ${message.data}');
 
-      // Menggunakan local notifications untuk menampilkan Heads-up banner
       flutterLocalNotificationsPlugin.show(
-        message.hashCode, // ID Notifikasi
+        message.hashCode,
         message.notification!.title,
         message.notification!.body,
         NotificationDetails(
@@ -121,38 +205,36 @@ class NotificationService extends GetxService {
             channelDescription: channel.description,
             importance: Importance.high,
             priority: Priority.high,
-            // Custom sound sudah otomatis dipakai karena channel-nya sudah didefinisikan di atas
             ticker: 'ticker',
           ),
         ),
-        payload: message.data.toString(), // Kirim payload data
+        payload: message.data.toString(),
       );
     });
   }
 
-  // TODO: Metode untuk Eksperimen 2 (Navigasi dari Background/Closed)
+  // --- Handle FCM Background to App (Eksperimen 2) ---
   void _handleMessageOpenedApp() {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('--- ON MESSAGE OPENED APP (Eksperimen 2) ---');
-      // Panggil Get.toNamed untuk navigasi ke halaman detail
-      // Contoh: Get.toNamed(AppRoutes.ORDER_DETAIL, arguments: message.data['order_id']);
+      print('--- ON MESSAGE OPENED APP ---');
+      // TODO: Navigation logic here
     });
   }
 
-  // TODO: Metode untuk Eksperimen 3 (Navigasi dari Terminated)
+  // --- Handle FCM Terminated to App (Eksperimen 3) ---
   void _handleInitialMessage() async {
     RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) {
-      print('--- GET INITIAL MESSAGE (Eksperimen 3) ---');
-      // Panggil Get.toNamed untuk navigasi saat aplikasi baru dibuka
+      print('--- GET INITIAL MESSAGE ---');
+      // TODO: Navigation logic here
     }
   }
 
-  // Metode untuk mendapatkan token (Wajib untuk pengujian FCM Console)
+  // --- Get and Log FCM Token ---
   void _getFCMToken() async {
     String? token = await FirebaseMessaging.instance.getToken();
     print("FCM Token: $token");
-    // TODO: Simpan token ini ke Supabase di tabel profiles jika perlu
+    // TODO: Send token to your backend/Supabase
   }
 }

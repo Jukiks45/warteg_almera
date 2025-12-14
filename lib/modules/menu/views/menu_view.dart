@@ -1,4 +1,4 @@
-// File: menu_view.dart
+// File: lib\modules\menu\views\menu_view.dart
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -8,8 +8,7 @@ import '../../../routes/app_routes.dart';
 import '../../cart/controllers/cart_controller.dart';
 import '../../../providers/login_providers.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-
-
+import '../../../services/notification_service.dart';
 
 class MenuView extends GetView<menu.MenuController> {
   const MenuView({super.key});
@@ -17,6 +16,8 @@ class MenuView extends GetView<menu.MenuController> {
   @override
   Widget build(BuildContext context) {
     final cartController = Get.find<CartController>();
+    final notificationService =
+        Get.find<NotificationService>(); // Ambil service di sini
 
     return Scaffold(
       appBar: AppBar(
@@ -76,12 +77,43 @@ class MenuView extends GetView<menu.MenuController> {
             tooltip: 'Lokasi Saya',
           ),
 
-          // IconButton(
-          //   icon: const Icon(Icons.swap_horiz),
-          //   onPressed: () => controller.fetchMenuWithDetailCallbackHttp(),
-          //   tooltip: 'Reload Callback Chaining',
-          // ),
-          
+          IconButton(
+            icon: const Icon(Icons.notifications_active),
+            onPressed: () {
+              Get.bottomSheet(
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(16)),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.timer),
+                        title: const Text('DEMO 10 Detik'),
+                        onTap: () {
+                          notificationService.testDelaySafe(seconds: 10);
+                          Get.back();
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.volume_up),
+                        title: const Text('TEST INSTAN'),
+                        onTap: () {
+                          notificationService.showCustomSoundTest();
+                          Get.back();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+            tooltip: 'Uji Notifikasi',
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
@@ -114,6 +146,8 @@ class MenuView extends GetView<menu.MenuController> {
         ],
       ),
       body: Obx(() {
+// ... (Bagian Body lainnya tetap sama)
+// ... (Semua fungsi helper _buildSelectedMenuCard, _showMenuDetail, dll tetap sama)
         if (controller.isLoading.value && controller.listMenu.isEmpty) {
           return _buildLoadingIndicator(context);
         }
@@ -240,8 +274,8 @@ class MenuView extends GetView<menu.MenuController> {
   }
 
   // ============================================
-  // BARU: Menu Pilihan (Menggunakan selectedMenu)
-  // ============================================
+// ... (Semua Helper Methods _buildSelectedMenuCard, _showMenuDetail, _formatCurrency, dll. tetap sama)
+
   Widget _buildSelectedMenuCard(BuildContext context, MenuModel? selectedMenu) {
     if (selectedMenu == null) {
       return const SizedBox.shrink(); // Sembunyikan jika selectedMenu null
@@ -281,7 +315,7 @@ class MenuView extends GetView<menu.MenuController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  '★ MENU PILIHAN',
+                  '⭐ MENU PILIHAN',
                   style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
@@ -322,6 +356,8 @@ class MenuView extends GetView<menu.MenuController> {
   // =====================
   // POP-UP DETAIL
   // =====================
+// ... (Bagian _showMenuDetail dan _showHiveDebugDialog tetap sama)
+
   void _showMenuDetail(BuildContext context, MenuModel menu) {
     final cartController = Get.find<CartController>();
 
@@ -361,6 +397,7 @@ class MenuView extends GetView<menu.MenuController> {
       onConfirm: () => Get.back(),
     );
   }
+// ... (Semua Helper Methods lainnya tetap sama)
 
   // Helper method untuk debug Hive (unused tapi bisa berguna untuk debugging)
   // ignore: unused_element
@@ -375,7 +412,7 @@ class MenuView extends GetView<menu.MenuController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('📊 Debug Information:',
+              const Text('ℹ️ Debug Information:',
                   style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
 
