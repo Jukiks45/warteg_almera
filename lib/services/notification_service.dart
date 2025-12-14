@@ -36,7 +36,6 @@ class NotificationService extends GetxService {
       _handleInitialMessage();
       _handleMessageOpenedApp();
       _getFCMToken();
-      await scheduleBreakfastReminder();
       print('✅ [SERVICE] Notification and FCM setup complete.');
       return this;
     } catch (e, stacktrace) {
@@ -101,93 +100,6 @@ class NotificationService extends GetxService {
     );
   }
 
-  Future<void> testDelaySafe({int seconds = 10}) async {
-    print('🧪 DEMO DELAY $seconds detik');
-
-    await Future.delayed(Duration(seconds: seconds));
-
-    flutterLocalNotificationsPlugin.show(
-      777,
-      'TEST DEMO',
-      'Notifikasi muncul setelah $seconds detik',
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          channel.id,
-          'Demo Notification',
-          importance: Importance.max,
-          priority: Priority.high,
-        ),
-      ),
-    );
-  }
-  //rill
-  // Future<void> scheduleBreakfastReminder() async {
-  //   const int id = 100;
-
-  //   await flutterLocalNotificationsPlugin.cancel(id);
-
-  //   final now = tz.TZDateTime.now(tz.local);
-  //   var scheduledDate = tz.TZDateTime(
-  //     tz.local,
-  //     now.year,
-  //     now.month,
-  //     now.day,
-  //     7,
-  //   );
-
-  //   if (scheduledDate.isBefore(now)) {
-  //     scheduledDate = scheduledDate.add(const Duration(days: 1));
-  //   }
-
-  //   await flutterLocalNotificationsPlugin.zonedSchedule(
-  //     id,
-  //     'Waktunya Sarapan!',
-  //     'Pukul 07:00. Mulai hari dengan energi terbaik!',
-  //     scheduledDate,
-  //     NotificationDetails(
-  //       android: AndroidNotificationDetails(
-  //         channel.id,
-  //         'Pengingat Sarapan',
-  //         importance: Importance.max,
-  //       ),
-  //     ),
-  //     uiLocalNotificationDateInterpretation:
-  //         UILocalNotificationDateInterpretation.absoluteTime,
-  //     matchDateTimeComponents: DateTimeComponents.time,
-  //   );
-
-  //   print('⏰ Notifikasi RILL dijadwalkan jam 07:00');
-  // }
-  // 
-
-  //test
-  Future<void> scheduleBreakfastReminder() async {
-  const int id = 100;
-
-  await flutterLocalNotificationsPlugin.cancel(id);
-
-  final scheduledDate =
-      tz.TZDateTime.now(tz.local).add(const Duration(minutes: 1));
-
-  print('🧪 TEST MODE');
-  print('⏰ Notif akan muncul di: $scheduledDate');
-
-  await flutterLocalNotificationsPlugin.zonedSchedule(
-    id,
-    'TEST SARAPAN',
-    'Ini test 2 menit setelah sekarang',
-    scheduledDate,
-    NotificationDetails(
-      android: AndroidNotificationDetails(
-        channel.id,
-        'Pengingat Sarapan',
-        importance: Importance.max,
-      ),
-    ),
-    uiLocalNotificationDateInterpretation:
-        UILocalNotificationDateInterpretation.absoluteTime,
-  );
-}
 
   // --- Handle FCM Foreground (App Terbuka) ---
   void _setupForegroundHandler() {

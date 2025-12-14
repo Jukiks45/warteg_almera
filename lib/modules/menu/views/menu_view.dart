@@ -78,43 +78,6 @@ class MenuView extends GetView<menu.MenuController> {
           ),
 
           IconButton(
-            icon: const Icon(Icons.notifications_active),
-            onPressed: () {
-              Get.bottomSheet(
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(16)),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        leading: const Icon(Icons.timer),
-                        title: const Text('DEMO 10 Detik'),
-                        onTap: () {
-                          notificationService.testDelaySafe(seconds: 10);
-                          Get.back();
-                        },
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.volume_up),
-                        title: const Text('TEST INSTAN'),
-                        onTap: () {
-                          notificationService.showCustomSoundTest();
-                          Get.back();
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-            tooltip: 'Uji Notifikasi',
-          ),
-          IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
               Get.defaultDialog(
