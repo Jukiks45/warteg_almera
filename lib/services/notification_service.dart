@@ -15,6 +15,7 @@ const AndroidNotificationChannel channel = AndroidNotificationChannel(
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print('Handling a background message: ${message.messageId}');
+  print('Data: ${message.data}');
   // TODO: Implement navigation/data handling for Terminated/Background state
 }
 
