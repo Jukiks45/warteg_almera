@@ -1,8 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
-import 'package:timezone/data/latest.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
 
 // --- 1. Custom Sound Channel Definition (Android) ---
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
@@ -13,27 +11,20 @@ const AndroidNotificationChannel channel = AndroidNotificationChannel(
   sound: RawResourceAndroidNotificationSound('hidupjokowi'),
 );
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
-// --- 2. Background Message Handler ---
+// --- 2. Background Message Handler (Top-level function) ---
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Lakukan inisialisasi Firebase lagi di sini jika diperlukan,
-  // tetapi biasanya sudah ditangani oleh GetX/main.dart
-
   print('Handling a background message: ${message.messageId}');
-  print('Data: ${message.data}');
-
-  // TODO: Implementasi navigasi untuk Terminated/Background di sini
+  // TODO: Implement navigation/data handling for Terminated/Background state
 }
 
 class NotificationService extends GetxService {
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
   Future<NotificationService> init() async {
     try {
       print('>>> Starting NotificationService Initialization...');
-      // ⏰ INIT TIMEZONE
-      tz.initializeTimeZones();
-      tz.setLocalLocation(tz.getLocation('Asia/Jakarta'));
       FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
       await _setupLocalNotifications();
       _setupForegroundHandler();
@@ -107,9 +98,14 @@ class NotificationService extends GetxService {
       },
     );
 
+    // Meminta Izin
     await FirebaseMessaging.instance.requestPermission(
       alert: true,
+      announcement: false,
       badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
       sound: true,
     );
   }

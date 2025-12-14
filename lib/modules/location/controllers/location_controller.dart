@@ -10,7 +10,6 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:warung_makan/services/notification_service.dart';
 
 import '../../../services/notification_service.dart';
 
