@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/cart_controller.dart';
+import '../../promo/controllers/promo_controller.dart';
 
 class CartView extends GetView<CartController> {
   const CartView({super.key});
@@ -55,6 +56,8 @@ class CartView extends GetView<CartController> {
                 },
               ),
             ),
+            // Promo Section
+            _buildPromoSection(context),
             _buildBottomBar(context),
           ],
         );
@@ -233,6 +236,60 @@ class CartView extends GetView<CartController> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Subtotal
+            Obx(() => Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Subtotal',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  'Rp ${_formatCurrency(controller.subtotalPrice)}',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            )),
+            
+            // Promo Discount
+            Obx(() {
+              if (controller.promoDiscount.value > 0) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Diskon Promo',
+                        style: TextStyle(
+                          color: Colors.green[700],
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        '- Rp ${_formatCurrency(controller.promoDiscount.value)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.green[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            }),
+            
+            const Divider(height: 24),
+            
+            // Total
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -588,5 +645,247 @@ class CartView extends GetView<CartController> {
   String _formatCurrency(double amount) {
     return amount.toStringAsFixed(0).replaceAllMapped(
         RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
+  }
+
+  Widget _buildPromoSection(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.orange.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.orange.withOpacity(0.3),
+        ),
+      ),
+      child: Obx(() {
+        if (controller.appliedPromoCode.value != null) {
+          // Promo sudah diterapkan
+          return Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.check_circle,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Promo Diterapkan',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      controller.appliedPromoCode.value!,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  controller.removePromo();
+                  Get.snackbar(
+                    'Promo Dihapus',
+                    'Kode promo berhasil dihapus',
+                    snackPosition: SnackPosition.BOTTOM,
+                  );
+                },
+                icon: const Icon(Icons.close, color: Colors.red),
+                tooltip: 'Hapus promo',
+              ),
+            ],
+          );
+        }
+
+        // Belum ada promo
+        return Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.orange,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.local_offer,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Punya kode promo?',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => _showPromoDialog(context),
+              child: const Text(
+                'Masukkan',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      }),
+    );
+  }
+
+  void _showPromoDialog(BuildContext context) {
+    // Pastikan PromoController sudah diload
+    if (!Get.isRegistered<PromoController>()) {
+      Get.lazyPut(() => PromoController());
+    }
+    final promoController = Get.find<PromoController>();
+
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Pilih Promo',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Get.back(),
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            
+            // List promo
+            Obx(() {
+              if (promoController.promos.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Center(
+                    child: Text('Tidak ada promo tersedia'),
+                  ),
+                );
+              }
+
+              return Column(
+                children: promoController.promos
+                    .where((promo) => promo.isValid)
+                    .map((promo) => Card(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          child: ListTile(
+                            leading: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.orange.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(
+                                Icons.local_offer,
+                                color: Colors.orange,
+                              ),
+                            ),
+                            title: Text(
+                              promo.promoCode ?? '',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Diskon Rp ${_formatCurrency(promo.discountAmount)}',
+                                  style: const TextStyle(
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                if (promo.minPurchase > 0)
+                                  Text(
+                                    'Min. belanja Rp ${_formatCurrency(promo.minPurchase)}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            trailing: ElevatedButton(
+                              onPressed: () {
+                                controller.applyPromo(
+                                  promo.promoCode!,
+                                  promo.discountAmount,
+                                  promo.minPurchase,
+                                ).then((success) {
+                                  if (success) {
+                                    Get.back();
+                                  }
+                                });
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                              ),
+                              child: const Text('Pakai'),
+                            ),
+                          ),
+                        ))
+                    .toList(),
+              );
+            }),
+
+            const SizedBox(height: 16),
+            TextButton.icon(
+              onPressed: () {
+                Get.back();
+                Get.toNamed('/promo');
+              },
+              icon: const Icon(Icons.arrow_forward),
+              label: const Text('Lihat Semua Promo'),
+            ),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
   }
 }
