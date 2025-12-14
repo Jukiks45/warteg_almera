@@ -13,17 +13,21 @@ const AndroidNotificationChannel channel = AndroidNotificationChannel(
   sound: RawResourceAndroidNotificationSound('hidupjokowi'),
 );
 
-// --- 2. Background Message Handler (Top-level function) ---
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+// --- 2. Background Message Handler ---
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Lakukan inisialisasi Firebase lagi di sini jika diperlukan,
+  // tetapi biasanya sudah ditangani oleh GetX/main.dart
+
   print('Handling a background message: ${message.messageId}');
-  // TODO: Implement navigation/data handling for Terminated/Background state
+  print('Data: ${message.data}');
+
+  // TODO: Implementasi navigasi untuk Terminated/Background di sini
 }
 
 class NotificationService extends GetxService {
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
-
   Future<NotificationService> init() async {
     try {
       print('>>> Starting NotificationService Initialization...');
@@ -110,24 +114,23 @@ class NotificationService extends GetxService {
     );
   }
 
-
   // --- Handle FCM Foreground (App Terbuka) ---
   void _setupForegroundHandler() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print("\n" + "🔔"*30);
+      print("\n" + "🔔" * 30);
       print('📩 FOREGROUND MESSAGE RECEIVED!');
-      print("🔔"*30);
-      
+      print("🔔" * 30);
+
       if (message.notification != null) {
         print('📌 Title: ${message.notification!.title}');
         print('📝 Body: ${message.notification!.body}');
       }
-      
+
       if (message.data.isNotEmpty) {
         print('📦 Data: ${message.data}');
       }
-      
-      print("🔔"*30 + "\n");
+
+      print("🔔" * 30 + "\n");
 
       flutterLocalNotificationsPlugin.show(
         message.hashCode,
@@ -153,7 +156,7 @@ class NotificationService extends GetxService {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       print('--- ON MESSAGE OPENED APP (Eksperimen 2) ---');
       print('Message data: ${message.data}');
-      
+
       // Navigasi berdasarkan tipe notifikasi
       _handleNotificationNavigation(message.data);
     });
@@ -166,7 +169,7 @@ class NotificationService extends GetxService {
     if (initialMessage != null) {
       print('--- GET INITIAL MESSAGE (Eksperimen 3) ---');
       print('Message data: ${initialMessage.data}');
-      
+
       // Delay untuk memastikan aplikasi sudah siap
       Future.delayed(const Duration(seconds: 1), () {
         _handleNotificationNavigation(initialMessage.data);
@@ -177,27 +180,27 @@ class NotificationService extends GetxService {
   // --- Get and Log FCM Token ---
   void _getFCMToken() async {
     String? token = await FirebaseMessaging.instance.getToken();
-    
-    print("\n" + "="*60);
+
+    print("\n" + "=" * 60);
     print("📱 FCM TOKEN - COPY TOKEN INI!");
-    print("="*60);
+    print("=" * 60);
     print("FCM Token: $token");
-    print("="*60);
+    print("=" * 60);
     print("📝 Cara test:");
     print("1. Copy token di atas");
     print("2. Firebase Console → Cloud Messaging → Send test message");
     print("3. Paste token → Test");
-    print("="*60 + "\n");
-    
+    print("=" * 60 + "\n");
+
     // TODO: Simpan token ini ke Supabase di tabel profiles jika perlu
   }
 
   /// Helper untuk navigasi berdasarkan data notifikasi
   void _handleNotificationNavigation(Map<String, dynamic> data) {
     print('Handling navigation with data: $data');
-    
+
     final type = data['type']?.toString() ?? '';
-    
+
     switch (type) {
       case 'promo':
         // Navigasi ke halaman promo
@@ -210,18 +213,18 @@ class NotificationService extends GetxService {
           Get.toNamed('/promo');
         }
         break;
-        
+
       case 'order':
         // Navigasi ke order history
         final orderId = data['order_id']?.toString();
         Get.toNamed('/order-history', arguments: {'orderId': orderId});
         break;
-        
+
       case 'menu':
         // Navigasi ke menu
         Get.toNamed('/menu');
         break;
-        
+
       default:
         // Default navigasi ke halaman promo jika tidak ada type
         Get.toNamed('/promo');
