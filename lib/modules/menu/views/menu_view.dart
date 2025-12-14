@@ -8,7 +8,7 @@ import '../../../routes/app_routes.dart';
 import '../../cart/controllers/cart_controller.dart';
 import '../../../providers/login_providers.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../../../services/notification_service.dart';
+// import '../../../services/notification_service.dart';
 
 class MenuView extends GetView<menu.MenuController> {
   const MenuView({super.key});
@@ -16,9 +16,6 @@ class MenuView extends GetView<menu.MenuController> {
   @override
   Widget build(BuildContext context) {
     final cartController = Get.find<CartController>();
-    final notificationService =
-        Get.find<NotificationService>(); // Ambil service di sini
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Daftar Menu'),
