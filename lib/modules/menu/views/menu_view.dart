@@ -1,7 +1,8 @@
-// File: menu_view.dart
+// File: lib\modules\menu\views\menu_view.dart
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:warung_makan/services/notification_service.dart' show NotificationService;
 import '../controllers/menu_controller.dart' as menu;
 import '../models/menu_model.dart';
 import '../../../routes/app_routes.dart';
@@ -9,20 +10,47 @@ import '../../cart/controllers/cart_controller.dart';
 import '../../../providers/login_providers.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-
-
 class MenuView extends GetView<menu.MenuController> {
   const MenuView({super.key});
 
   @override
   Widget build(BuildContext context) {
     final cartController = Get.find<CartController>();
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Daftar Menu'),
         centerTitle: true,
         actions: [
+          // Promo Icon dengan Badge Hot
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.local_offer),
+                onPressed: () => Get.toNamed(AppRoutes.promo),
+                tooltip: 'Promo & Penawaran',
+              ),
+              Positioned(
+                right: 8,
+                top: 8,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'HOT',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 8,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
           IconButton(
             icon: const Icon(Icons.receipt_long),
             onPressed: () => Get.toNamed(AppRoutes.orderHistory),
@@ -69,6 +97,13 @@ class MenuView extends GetView<menu.MenuController> {
             tooltip: 'Reload Async-Await',
           ),
           IconButton(
+            icon: const Icon(Icons.notifications_active),
+            tooltip: 'Test Local Notification',
+            onPressed: () {
+              Get.find<NotificationService>().showCustomSoundTest();
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.location_on),
             onPressed: () {
               Get.toNamed(AppRoutes.lokasi);
@@ -76,12 +111,6 @@ class MenuView extends GetView<menu.MenuController> {
             tooltip: 'Lokasi Saya',
           ),
 
-          // IconButton(
-          //   icon: const Icon(Icons.swap_horiz),
-          //   onPressed: () => controller.fetchMenuWithDetailCallbackHttp(),
-          //   tooltip: 'Reload Callback Chaining',
-          // ),
-          
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
@@ -114,6 +143,8 @@ class MenuView extends GetView<menu.MenuController> {
         ],
       ),
       body: Obx(() {
+// ... (Bagian Body lainnya tetap sama)
+// ... (Semua fungsi helper _buildSelectedMenuCard, _showMenuDetail, dll tetap sama)
         if (controller.isLoading.value && controller.listMenu.isEmpty) {
           return _buildLoadingIndicator(context);
         }
@@ -135,6 +166,9 @@ class MenuView extends GetView<menu.MenuController> {
               children: [
                 // === MENU PILIHAN BARU (Menggunakan selectedMenu) ===
                 _buildSelectedMenuCard(context, controller.selectedMenu.value),
+
+                // === BANNER PROMO ===
+                _buildPromoBanner(context),
 
                 Padding(
                   padding: const EdgeInsets.only(left: 16, top: 16, bottom: 8),
@@ -240,8 +274,8 @@ class MenuView extends GetView<menu.MenuController> {
   }
 
   // ============================================
-  // BARU: Menu Pilihan (Menggunakan selectedMenu)
-  // ============================================
+// ... (Semua Helper Methods _buildSelectedMenuCard, _showMenuDetail, _formatCurrency, dll. tetap sama)
+
   Widget _buildSelectedMenuCard(BuildContext context, MenuModel? selectedMenu) {
     if (selectedMenu == null) {
       return const SizedBox.shrink(); // Sembunyikan jika selectedMenu null
@@ -281,7 +315,7 @@ class MenuView extends GetView<menu.MenuController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  '★ MENU PILIHAN',
+                  '⭐ MENU PILIHAN',
                   style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
@@ -322,6 +356,8 @@ class MenuView extends GetView<menu.MenuController> {
   // =====================
   // POP-UP DETAIL
   // =====================
+// ... (Bagian _showMenuDetail dan _showHiveDebugDialog tetap sama)
+
   void _showMenuDetail(BuildContext context, MenuModel menu) {
     final cartController = Get.find<CartController>();
 
@@ -361,6 +397,7 @@ class MenuView extends GetView<menu.MenuController> {
       onConfirm: () => Get.back(),
     );
   }
+// ... (Semua Helper Methods lainnya tetap sama)
 
   // Helper method untuk debug Hive (unused tapi bisa berguna untuk debugging)
   // ignore: unused_element
@@ -375,7 +412,7 @@ class MenuView extends GetView<menu.MenuController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('📊 Debug Information:',
+              const Text('ℹ️ Debug Information:',
                   style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
 
@@ -574,5 +611,91 @@ class MenuView extends GetView<menu.MenuController> {
   String _formatCurrency(double amount) {
     return amount.toStringAsFixed(0).replaceAllMapped(
         RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
+  }
+
+  /// Build banner promo yang menarik
+  Widget _buildPromoBanner(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: InkWell(
+        onTap: () => Get.toNamed(AppRoutes.promo),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFFF6B35), Color(0xFFFF8C42)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFF6B35).withOpacity(0.4),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Icon Promo
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.local_offer,
+                  color: Colors.white,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(width: 16),
+
+              // Text Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Promo Spesial Hari Ini! 🎉',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Lihat semua penawaran menarik',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Arrow Icon
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.white,
+                  size: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

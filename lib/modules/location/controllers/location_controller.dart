@@ -9,6 +9,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+import '../../../services/notification_service.dart';
 
 class LocationController extends GetxController {
   // -----------------------
@@ -40,6 +43,7 @@ class LocationController extends GetxController {
 
   DateTime? _lastDistanceCalcAt;
   final int _distanceMinIntervalMillis = 500;
+  bool _arrivalNotified = false;
 
   @override
   void onInit() {
@@ -238,6 +242,11 @@ class LocationController extends GetxController {
     );
 
     distanceToTargetMeters.value = meters;
+
+    if (meters <= 50 && !_arrivalNotified) {
+      _arrivalNotified = true;
+      _showArrivalNotification();
+    }
   }
 
   String formattedDistance() {
@@ -291,6 +300,25 @@ class LocationController extends GetxController {
     } catch (e) {
       print('Route fetch error: $e');
     }
+  }
+
+  void _showArrivalNotification() {
+    final notificationService = Get.find<NotificationService>();
+
+    notificationService.flutterLocalNotificationsPlugin.show(
+      555,
+      '📍 Anda Sudah Sampai',
+      'Anda sudah berada di dekat Warteg Almera',
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          channel.id,
+          channel.name,
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+      ),
+      payload: 'type=location&target=maps',
+    );
   }
 
   // -----------------------

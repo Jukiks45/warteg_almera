@@ -10,6 +10,8 @@ import '../modules/order_history/bindings/order_history_binding.dart';
 import '../modules/order_history/views/order_history_view.dart';
 import '../modules/location/bindings/location_binding.dart';
 import '../modules/location/views/location_view.dart';
+import '../modules/promo/bindings/promo_binding.dart';
+import '../modules/promo/views/promo_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -43,6 +45,11 @@ class AppPages {
       name: AppRoutes.lokasi,
       page: () => const LocationView(),
       binding: LocationBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.promo,
+      page: () => const PromoView(),
+      binding: PromoBinding(),
     ),
   ]; 
 }

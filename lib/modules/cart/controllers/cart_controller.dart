@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -12,6 +13,8 @@ class CartController extends GetxController {
   final _supabase = Supabase.instance.client;
   
   final cartItems = <CartItemModel>[].obs;
+  final Rx<String?> appliedPromoCode = Rx<String?>(null);
+  final Rx<double> promoDiscount = 0.0.obs;
 
   Box<CartItemModel> get _cartBox => _localStorage.cartBox;
 
@@ -65,7 +68,13 @@ class CartController extends GetxController {
   // Computed properties
   int get totalItems => cartItems.fold(0, (sum, item) => sum + item.quantity);
   
-  double get totalPrice => cartItems.fold(0.0, (sum, item) => sum + item.subtotal);
+  double get subtotalPrice => cartItems.fold(0.0, (sum, item) => sum + item.subtotal);
+  
+  double get totalPrice {
+    final subtotal = subtotalPrice;
+    final total = subtotal - promoDiscount.value;
+    return total < 0 ? 0 : total;
+  }
 
   // Add item to cart
   void addToCart(MenuModel menu, {int quantity = 1}) {
@@ -135,7 +144,53 @@ class CartController extends GetxController {
   void clearCart() {
     print('🧹 Clearing all cart items');
     cartItems.clear();
+    removePromo();
     _saveCart();
+  }
+
+  // Apply promo code
+  Future<bool> applyPromo(String code, double discountAmount, double minPurchase) async {
+    try {
+      // Validasi minimal pembelian
+      if (subtotalPrice < minPurchase) {
+        Get.snackbar(
+          'Promo Tidak Berlaku',
+          'Minimal pembelian Rp ${_formatCurrency(minPurchase)} untuk menggunakan promo ini',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
+        return false;
+      }
+
+      appliedPromoCode.value = code;
+      promoDiscount.value = discountAmount;
+      
+      Get.snackbar(
+        'Promo Berhasil Diterapkan',
+        'Anda hemat Rp ${_formatCurrency(discountAmount)}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
+      
+      return true;
+    } catch (e) {
+      print('❌ Error applying promo: $e');
+      return false;
+    }
+  }
+
+  // Remove promo
+  void removePromo() {
+    appliedPromoCode.value = null;
+    promoDiscount.value = 0.0;
+  }
+
+  String _formatCurrency(double amount) {
+    return amount.toStringAsFixed(0).replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '\${m[1]}.');
   }
 
   // Get quantity of specific item
@@ -162,6 +217,11 @@ class CartController extends GetxController {
       }
 
       // 1. Insert order header
+      // Note: Jika tabel orders belum memiliki kolom promo_code dan promo_discount,
+      // silakan jalankan migration SQL berikut di Supabase:
+      // ALTER TABLE orders ADD COLUMN promo_code TEXT;
+      // ALTER TABLE orders ADD COLUMN promo_discount NUMERIC(10,2) DEFAULT 0;
+      
       final orderData = {
         'user_id': user.id,
         'total_items': totalItems,
@@ -170,6 +230,14 @@ class CartController extends GetxController {
         'payment_method': paymentMethod,
         'note': note,
       };
+      
+      // Tambahkan promo jika kolom sudah ada di database
+      // Untuk sementara, promo hanya digunakan di frontend
+      // Uncomment baris berikut setelah menambahkan kolom di database:
+      if (appliedPromoCode.value != null) {
+       orderData['promo_code'] = appliedPromoCode.value;
+       orderData['promo_discount'] = promoDiscount.value;
+     }
 
       final orderResponse = await _supabase
           .from('orders')

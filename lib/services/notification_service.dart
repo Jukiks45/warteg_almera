@@ -1,73 +1,67 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:get/get.dart'; // Import GetX
+import 'package:get/get.dart';
 
 
 // --- 1. Definisi Custom Sound Channel (Android) ---
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
-  'high_importance_channel', // ID Channel
-  'High Importance Notifications', // Nama Channel (terlihat di setting HP)
+  'high_importance_channel',
+  'High Importance Notifications',
   description: 'This channel is used for important order status updates.',
   importance: Importance.max,
-<<<<<<< HEAD
   sound: RawResourceAndroidNotificationSound('hidupjokowi'), // NAMA FILE AUDIO (TANPA EKSTENSI)
-=======
-  sound: RawResourceAndroidNotificationSound(
-      'hidupjokowi'), // NAMA FILE AUDIO (TANPA EKSTENSI)
->>>>>>> 09a271ee734d14667f38541f312a5dc22621dff8
 );
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
-
-// --- 2. Background Handler (Wajib untuk Eksperimen 3) ---
+// --- 2. Background Message Handler (Top-level function) ---
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Lakukan inisialisasi Firebase lagi di sini jika diperlukan,
-  // tetapi biasanya sudah ditangani oleh GetX/main.dart
-
   print('Handling a background message: ${message.messageId}');
   print('Data: ${message.data}');
-
-  // TODO: Implementasi navigasi untuk Terminated/Background di sini
+  // TODO: Implement navigation/data handling for Terminated/Background state
 }
 
 class NotificationService extends GetxService {
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
   Future<NotificationService> init() async {
     try {
-      print('🔔 STARTING NotificationService Initialization...');
-
-      // 1. Setup Background Handler
+      print('>>> Starting NotificationService Initialization...');
       FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-
-      // 2. Setup Local Notification Plugin (Android/iOS Settings)
       await _setupLocalNotifications();
-
-      // 3. Setup Foreground Handler (Untuk Eksperimen 1)
       _setupForegroundHandler();
-
-      // 4. Handle Notifikasi Saat Aplikasi Dibuka dari Terminated (Eksperimen 3)
       _handleInitialMessage();
-
-      // 5. Handle Notifikasi Saat Aplikasi Dibuka dari Background (Eksperimen 2)
       _handleMessageOpenedApp();
-
-      // 6. Dapatkan FCM Token
       _getFCMToken();
-
-      print('✅ [SERVICE] Setup Notifikasi dan FCM Token diminta.');
+      print('✅ [SERVICE] Notification and FCM setup complete.');
       return this;
     } catch (e, stacktrace) {
-      // Tangkap error jika terjadi di dalam inisialisasi
-      print('❌ KRITIS: Gagal inisialisasi NotificationService: $e');
+      print('❌ CRITICAL: Failed to initialize NotificationService: $e');
       print('STACK: $stacktrace');
-      return this; // Return this agar aplikasi tidak crash total
+      return this;
     }
   }
 
-  // Metode untuk inisialisasi FLNP
+  // --- FUNGSI BARU: Uji Suara Kustom (Instan) ---
+  Future<void> showCustomSoundTest() async {
+    await flutterLocalNotificationsPlugin.show(
+      99,
+      '🧪 TEST LOCAL NOTIFICATION',
+      'Ini notifikasi lokal untuk pengujian Modul 6',
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          channel.id,
+          channel.name,
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+      ),
+      payload: 'type=location&target=maps',
+    );
+  }
+
+  // --- Setup Local Notifications Plugin ---
   Future<void> _setupLocalNotifications() async {
-    // Setup Android
     await flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
@@ -76,7 +70,6 @@ class NotificationService extends GetxService {
     const initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    // Setup iOS
     const initializationSettingsDarwin = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -90,9 +83,18 @@ class NotificationService extends GetxService {
 
     await flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
-      // Handler saat notifikasi lokal diklik
       onDidReceiveNotificationResponse: (NotificationResponse response) {
-        // TODO: Sama seperti logic navigasi FCM (Eksperimen 2/3)
+        print('--- NOTIFICATION TAPPED ---');
+        if (response.payload != null) {
+          // Parse payload (dari FCM data)
+          try {
+            // Payload berisi data dalam format string
+            final data = _parsePayload(response.payload!);
+            _handleNotificationNavigation(data);
+          } catch (e) {
+            print('Error parsing payload: $e');
+          }
+        }
       },
     );
 
@@ -108,15 +110,26 @@ class NotificationService extends GetxService {
     );
   }
 
-  // Metode untuk Eksperimen 1
+  // --- Handle FCM Foreground (App Terbuka) ---
   void _setupForegroundHandler() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('--- FOREGROUND MESSAGE RECEIVED ---');
-      print('Message data: ${message.data}');
+      print("\n" + "🔔" * 30);
+      print('📩 FOREGROUND MESSAGE RECEIVED!');
+      print("🔔" * 30);
 
-      // Menggunakan local notifications untuk menampilkan Heads-up banner
+      if (message.notification != null) {
+        print('📌 Title: ${message.notification!.title}');
+        print('📝 Body: ${message.notification!.body}');
+      }
+
+      if (message.data.isNotEmpty) {
+        print('📦 Data: ${message.data}');
+      }
+
+      print("🔔" * 30 + "\n");
+
       flutterLocalNotificationsPlugin.show(
-        message.hashCode, // ID Notifikasi
+        message.hashCode,
         message.notification!.title,
         message.notification!.body,
         NotificationDetails(
@@ -126,38 +139,118 @@ class NotificationService extends GetxService {
             channelDescription: channel.description,
             importance: Importance.high,
             priority: Priority.high,
-            // Custom sound sudah otomatis dipakai karena channel-nya sudah didefinisikan di atas
             ticker: 'ticker',
           ),
         ),
-        payload: message.data.toString(), // Kirim payload data
+        payload: _encodePayload(message.data), // Kirim payload data
       );
     });
   }
 
-  // TODO: Metode untuk Eksperimen 2 (Navigasi dari Background/Closed)
+  // Metode untuk Eksperimen 2 (Navigasi dari Background/Closed)
   void _handleMessageOpenedApp() {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       print('--- ON MESSAGE OPENED APP (Eksperimen 2) ---');
-      // Panggil Get.toNamed untuk navigasi ke halaman detail
-      // Contoh: Get.toNamed(AppRoutes.ORDER_DETAIL, arguments: message.data['order_id']);
+      print('Message data: ${message.data}');
+
+      // Navigasi berdasarkan tipe notifikasi
+      _handleNotificationNavigation(message.data);
     });
   }
 
-  // TODO: Metode untuk Eksperimen 3 (Navigasi dari Terminated)
+  // Metode untuk Eksperimen 3 (Navigasi dari Terminated)
   void _handleInitialMessage() async {
     RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) {
       print('--- GET INITIAL MESSAGE (Eksperimen 3) ---');
-      // Panggil Get.toNamed untuk navigasi saat aplikasi baru dibuka
+      print('Message data: ${initialMessage.data}');
+
+      // Delay untuk memastikan aplikasi sudah siap
+      Future.delayed(const Duration(seconds: 1), () {
+        _handleNotificationNavigation(initialMessage.data);
+      });
     }
   }
 
-  // Metode untuk mendapatkan token (Wajib untuk pengujian FCM Console)
+  // --- Get and Log FCM Token ---
   void _getFCMToken() async {
     String? token = await FirebaseMessaging.instance.getToken();
+
+    print("\n" + "=" * 60);
+    print("📱 FCM TOKEN - COPY TOKEN INI!");
+    print("=" * 60);
     print("FCM Token: $token");
+    print("=" * 60);
+    print("📝 Cara test:");
+    print("1. Copy token di atas");
+    print("2. Firebase Console → Cloud Messaging → Send test message");
+    print("3. Paste token → Test");
+    print("=" * 60 + "\n");
+
     // TODO: Simpan token ini ke Supabase di tabel profiles jika perlu
+  }
+
+  /// Helper untuk navigasi berdasarkan data notifikasi
+  void _handleNotificationNavigation(Map<String, dynamic> data) {
+    print('Handling navigation with data: $data');
+
+    final type = data['type']?.toString() ?? '';
+
+    switch (type) {
+      case 'promo':
+        // Navigasi ke halaman promo
+        final promoId = data['promo_id']?.toString();
+        if (promoId != null && promoId.isNotEmpty) {
+          // Navigasi ke detail promo spesifik
+          Get.toNamed('/promo', arguments: {'promoId': promoId});
+        } else {
+          // Navigasi ke list promo
+          Get.toNamed('/promo');
+        }
+        break;
+
+      case 'order':
+        // Navigasi ke order history
+        final orderId = data['order_id']?.toString();
+        Get.toNamed('/order-history', arguments: {'orderId': orderId});
+        break;
+
+      case 'location':
+        Get.toNamed('/lokasi');
+        break;
+
+      default:
+        // Default navigasi ke halaman promo jika tidak ada type
+        Get.toNamed('/promo');
+        break;
+    }
+  }
+
+  /// Helper untuk encode payload ke string
+  String _encodePayload(Map<String, dynamic> data) {
+    try {
+      // Simple encoding: key1=value1&key2=value2
+      return data.entries.map((e) => '${e.key}=${e.value}').join('&');
+    } catch (e) {
+      return '';
+    }
+  }
+
+  /// Helper untuk parse payload dari string
+  Map<String, dynamic> _parsePayload(String payload) {
+    try {
+      final Map<String, dynamic> result = {};
+      final parts = payload.split('&');
+      for (var part in parts) {
+        final keyValue = part.split('=');
+        if (keyValue.length == 2) {
+          result[keyValue[0]] = keyValue[1];
+        }
+      }
+      return result;
+    } catch (e) {
+      return {};
+    }
   }
 }
