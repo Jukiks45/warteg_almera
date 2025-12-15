@@ -43,22 +43,20 @@ class NotificationService extends GetxService {
 
   // --- FUNGSI BARU: Uji Suara Kustom (Instan) ---
   Future<void> showCustomSoundTest() async {
-    // ID 99 adalah ID notifikasi
     await flutterLocalNotificationsPlugin.show(
       99,
-      '✅ UJI SUARA KUSTOM BERHASIL',
-      'Ini adalah notifikasi dengan audio "hidupjokowi.mp3" Anda.',
+      '🧪 TEST LOCAL NOTIFICATION',
+      'Ini notifikasi lokal untuk pengujian Modul 6',
       NotificationDetails(
         android: AndroidNotificationDetails(
-          // PENTING: Menggunakan CHANNEL ID yang sudah kita definisikan di atas
           channel.id,
           channel.name,
           importance: Importance.max,
+          priority: Priority.high,
         ),
       ),
-      payload: 'custom_sound_test',
+      payload: 'type=location&target=maps',
     );
-    print('✅ [TEST] Notifikasi Uji Suara Kustom dipicu.');
   }
 
   // --- Setup Local Notifications Plugin ---
@@ -217,9 +215,8 @@ class NotificationService extends GetxService {
         Get.toNamed('/order-history', arguments: {'orderId': orderId});
         break;
 
-      case 'menu':
-        // Navigasi ke menu
-        Get.toNamed('/menu');
+      case 'location':
+        Get.toNamed('/lokasi');
         break;
 
       default:

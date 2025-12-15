@@ -2,13 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:warung_makan/services/notification_service.dart' show NotificationService;
 import '../controllers/menu_controller.dart' as menu;
 import '../models/menu_model.dart';
 import '../../../routes/app_routes.dart';
 import '../../cart/controllers/cart_controller.dart';
 import '../../../providers/login_providers.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-// import '../../../services/notification_service.dart';
 
 class MenuView extends GetView<menu.MenuController> {
   const MenuView({super.key});
@@ -33,7 +33,8 @@ class MenuView extends GetView<menu.MenuController> {
                 right: 8,
                 top: 8,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   decoration: BoxDecoration(
                     color: Colors.red,
                     borderRadius: BorderRadius.circular(8),
@@ -94,6 +95,13 @@ class MenuView extends GetView<menu.MenuController> {
             icon: const Icon(Icons.refresh),
             onPressed: () => controller.fetchMenuWithDetailHttp(),
             tooltip: 'Reload Async-Await',
+          ),
+          IconButton(
+            icon: const Icon(Icons.notifications_active),
+            tooltip: 'Test Local Notification',
+            onPressed: () {
+              Get.find<NotificationService>().showCustomSoundTest();
+            },
           ),
           IconButton(
             icon: const Icon(Icons.location_on),
@@ -645,7 +653,7 @@ class MenuView extends GetView<menu.MenuController> {
                 ),
               ),
               const SizedBox(width: 16),
-              
+
               // Text Content
               Expanded(
                 child: Column(
@@ -670,7 +678,7 @@ class MenuView extends GetView<menu.MenuController> {
                   ],
                 ),
               ),
-              
+
               // Arrow Icon
               Container(
                 padding: const EdgeInsets.all(8),

@@ -306,18 +306,18 @@ class LocationController extends GetxController {
     final notificationService = Get.find<NotificationService>();
 
     notificationService.flutterLocalNotificationsPlugin.show(
-      1,
+      555,
       '📍 Anda Sudah Sampai',
       'Anda sudah berada di dekat Warteg Almera',
       NotificationDetails(
         android: AndroidNotificationDetails(
           channel.id,
-          'Arrival Notification',
-          channelDescription: 'Notifikasi saat user tiba di lokasi warteg',
+          channel.name,
           importance: Importance.max,
           priority: Priority.high,
         ),
       ),
+      payload: 'type=location&target=maps',
     );
   }
 
