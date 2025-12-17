@@ -143,8 +143,6 @@ class MenuView extends GetView<menu.MenuController> {
         ],
       ),
       body: Obx(() {
-// ... (Bagian Body lainnya tetap sama)
-// ... (Semua fungsi helper _buildSelectedMenuCard, _showMenuDetail, dll tetap sama)
         if (controller.isLoading.value && controller.listMenu.isEmpty) {
           return _buildLoadingIndicator(context);
         }

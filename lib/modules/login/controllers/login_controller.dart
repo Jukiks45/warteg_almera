@@ -1,12 +1,16 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:warung_makan/constant/admin_constants.dart';
 // import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../routes/app_routes.dart';
 import '../../../services/auth_session_service.dart';
+import '../../../services/supabase_service.dart';
 import '/providers/login_providers.dart';
 
 class LoginController extends GetxController {
   final LoginProviders _provider = Get.find<LoginProviders>();
+  final supabaseService = Get.find<SupabaseService>();
 
   // --- Login Controllers ---
   final usernameController = TextEditingController(); // email sebenarnya
@@ -56,29 +60,32 @@ class LoginController extends GetxController {
     isLoading.value = true;
 
     try {
-      print('🔐 Login attempt for: $email');
+      debugPrint('🔐 Login attempt for: $email');
       final user = await _provider.login(email, password);
 
       isLoading.value = false;
 
       if (user != null) {
-    
         final authSession = Get.find<AuthSessionService>();
         await authSession.saveSession(
           userId: user.id,
           email: user.email ?? email,
         );
-        
+
         _success("Login berhasil!");
-        Get.offNamed(AppRoutes.menu);
+        if (supabaseService.currentUser?.id == AdminConstants.adminUid) {
+          Get.offAllNamed(AppRoutes.adminDashboard);
+        } else {
+          Get.offAllNamed(AppRoutes.menu);
+        }
       } else {
         _error("Login gagal. User tidak ditemukan.");
       }
     } on Exception catch (e) {
       isLoading.value = false;
       var cleanMessage = e.toString().replaceAll("Exception: ", "");
-      print('❌ Login Exception: $cleanMessage');
-      
+      debugPrint('❌ Login Exception: $cleanMessage');
+
       // Deteksi error connection-related
       final errorLower = cleanMessage.toLowerCase();
       if (errorLower.contains('clientexception') ||
@@ -89,15 +96,16 @@ class LoginController extends GetxController {
           errorLower.contains('no address') ||
           errorLower.contains('network') ||
           errorLower.contains('connection')) {
-        cleanMessage = "Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.";
+        cleanMessage =
+            "Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.";
       }
-      
+
       _error(cleanMessage);
     } catch (e) {
       isLoading.value = false;
-      print('❌ Unexpected login error: $e');
-      print('❌ Error type: ${e.runtimeType}');
-      
+      debugPrint('❌ Unexpected login error: $e');
+      debugPrint('❌ Error type: ${e.runtimeType}');
+
       // Deteksi error connection-related di catch umum
       final errorStr = e.toString().toLowerCase();
       if (errorStr.contains('clientexception') ||
@@ -108,7 +116,8 @@ class LoginController extends GetxController {
           errorStr.contains('no address') ||
           errorStr.contains('network') ||
           errorStr.contains('connection')) {
-        _error("Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.");
+        _error(
+            "Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.");
       } else {
         _error("Terjadi kesalahan tidak terduga");
       }
@@ -139,13 +148,13 @@ class LoginController extends GetxController {
     isLoading.value = true;
 
     try {
-      print('📝 Attempting registration for: $email');
+      debugPrint('📝 Attempting registration for: $email');
       final user = await _provider.register(email, password);
 
       isLoading.value = false;
 
       if (user != null) {
-        print('✅ Registration successful for: $email');
+        debugPrint('✅ Registration successful for: $email');
         _success("Registrasi berhasil! Silakan login.");
         Get.back();
       } else {
@@ -154,8 +163,8 @@ class LoginController extends GetxController {
     } on Exception catch (e) {
       isLoading.value = false;
       var cleanMessage = e.toString().replaceAll("Exception: ", "");
-      print('❌ Registration Exception: $cleanMessage');
-      
+      debugPrint('❌ Registration Exception: $cleanMessage');
+
       // Deteksi error connection-related
       final errorLower = cleanMessage.toLowerCase();
       if (errorLower.contains('clientexception') ||
@@ -166,15 +175,16 @@ class LoginController extends GetxController {
           errorLower.contains('no address') ||
           errorLower.contains('network') ||
           errorLower.contains('connection')) {
-        cleanMessage = "Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.";
+        cleanMessage =
+            "Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.";
       }
-      
+
       _error(cleanMessage);
     } catch (e) {
       isLoading.value = false;
-      print('❌ Unexpected registration error: $e');
-      print('❌ Error type: ${e.runtimeType}');
-      
+      debugPrint('❌ Unexpected registration error: $e');
+      debugPrint('❌ Error type: ${e.runtimeType}');
+
       // Deteksi error connection-related di catch umum
       final errorStr = e.toString().toLowerCase();
       if (errorStr.contains('clientexception') ||
@@ -185,7 +195,8 @@ class LoginController extends GetxController {
           errorStr.contains('no address') ||
           errorStr.contains('network') ||
           errorStr.contains('connection')) {
-        _error("Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.");
+        _error(
+            "Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.");
       } else {
         _error("Terjadi kesalahan tidak terduga");
       }

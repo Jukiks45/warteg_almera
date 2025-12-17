@@ -12,6 +12,11 @@ import '../modules/location/bindings/location_binding.dart';
 import '../modules/location/views/location_view.dart';
 import '../modules/promo/bindings/promo_binding.dart';
 import '../modules/promo/views/promo_view.dart';
+import '../admin/modules/dashboard/bindings/dashboard_binding.dart';
+import '../admin/modules/dashboard/views/dashboard_view.dart';
+import '../admin/modules/menu/bindings/admin_menu_binding.dart';
+import '../admin/modules/menu/views/admin_menu_view.dart';
+import '../admin/modules/menu/views/admin_menu_form_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -51,5 +56,20 @@ class AppPages {
       page: () => const PromoView(),
       binding: PromoBinding(),
     ),
-  ]; 
+    GetPage(
+      name: AppRoutes.adminDashboard,
+      page: () => const DashboardView(),
+      binding: DashboardBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.adminMenu,
+      page: () => const AdminMenuView(),
+      binding: AdminMenuBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.adminMenuForm,
+      page: () => const AdminMenuFormView(),
+      binding: AdminMenuBinding(),
+    ),
+  ];
 }

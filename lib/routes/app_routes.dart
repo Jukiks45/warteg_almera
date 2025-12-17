@@ -6,4 +6,7 @@ abstract class AppRoutes {
   static const orderHistory = '/order-history';
   static const lokasi = '/location';
   static const promo = '/promo';
+  static const adminDashboard = '/admin/dashboard';
+  static const adminMenu = '/admin/menu';
+  static const adminMenuForm = '/admin/menu/form';
 }

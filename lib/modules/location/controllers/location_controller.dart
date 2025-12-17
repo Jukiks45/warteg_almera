@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
@@ -87,7 +88,7 @@ class LocationController extends GetxController {
         debugPrint('⚠️ Location permission denied forever');
         return;
       }
-      print('🎯 Starting location tracking with mode: ${locationMode.value}');
+      debugPrint('🎯 Starting location tracking with mode: ${locationMode.value}');
 
       final locationSettings = _getLocationSettings();
 
@@ -140,7 +141,7 @@ class LocationController extends GetxController {
 
   Future<void> switchLocationMode(String mode) async {
     if (locationMode.value == mode) return;
-    print('🔄 Switching location mode to: $mode');
+    debugPrint('🔄 Switching location mode to: $mode');
     locationMode.value = mode;
 
     // restart stream
@@ -274,7 +275,7 @@ class LocationController extends GetxController {
       final resp = await http.get(url);
       if (resp.statusCode != 200) {
         // don't spam logs - print once
-        print("OSRM ERROR: ${resp.statusCode}");
+        debugPrint("OSRM ERROR: ${resp.statusCode}");
         return;
       }
 
@@ -283,7 +284,7 @@ class LocationController extends GetxController {
           data['routes']?[0]?['geometry']?['coordinates'] as List<dynamic>?;
 
       if (coords == null || coords.isEmpty) {
-        print('OSRM: no coords');
+        debugPrint('OSRM: no coords');
         return;
       }
 
@@ -298,7 +299,7 @@ class LocationController extends GetxController {
         Polyline(points: routePoints, strokeWidth: 4.0, color: Colors.green),
       ];
     } catch (e) {
-      print('Route fetch error: $e');
+      debugPrint('Route fetch error: $e');
     }
   }
 
@@ -413,7 +414,7 @@ class LocationController extends GetxController {
       });
       debugPrint("supabse masuk");
     } catch (e) {
-      print('Supabase update error: $e');
+      debugPrint('Supabase update error: $e');
     }
   }
 

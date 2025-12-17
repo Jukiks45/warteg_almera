@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' show ClientException;
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -16,15 +17,15 @@ class LoginProviders extends GetxService {
 
   Future<User?> login(String email, String password) async {
     try {
-      print('🔐 Attempting login for: $email');
+      debugPrint('🔐 Attempting login for: $email');
       final response = await _client.auth.signInWithPassword(
         email: email,
         password: password,
       );
-      print('✅ Login successful');
+      debugPrint('✅ Login successful');
       return response.user;
     } on AuthException catch (e) {
-      print('❌ Auth Error: ${e.message}');
+      debugPrint('❌ Auth Error: ${e.message}');
       // Provide more user-friendly messages
       if (e.message.contains('Invalid login credentials')) {
         throw Exception('Email atau password salah. Silakan coba lagi.');
@@ -36,14 +37,14 @@ class LoginProviders extends GetxService {
         throw Exception(e.message);
       }
     } on ClientException catch (e) {
-      print('❌ ClientException (Network Error): $e');
+      debugPrint('❌ ClientException (Network Error): $e');
       throw Exception('Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
     } on SocketException catch (e) {
-      print('❌ SocketException (No Internet): $e');
+      debugPrint('❌ SocketException (No Internet): $e');
       throw Exception('Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
     } catch (e) {
-      print('❌ Unexpected Login Error: $e');
-      print('❌ Error Type: ${e.runtimeType}');
+      debugPrint('❌ Unexpected Login Error: $e');
+      debugPrint('❌ Error Type: ${e.runtimeType}');
       // Check if error message contains connection-related keywords
       final errorStr = e.toString().toLowerCase();
       if (errorStr.contains('clientexception') ||
@@ -61,15 +62,15 @@ class LoginProviders extends GetxService {
 
   Future<User?> register(String email, String password) async {
     try {
-      print('📝 Attempting registration for: $email');
+      debugPrint('📝 Attempting registration for: $email');
       final response = await _client.auth.signUp(
         email: email,
         password: password,
       );
-      print('✅ Registration successful');
+      debugPrint('✅ Registration successful');
       return response.user;
     } on AuthException catch (e) {
-      print('❌ Auth Error: ${e.message}');
+      debugPrint('❌ Auth Error: ${e.message}');
       // Provide more user-friendly messages
       if (e.message.contains('User already registered')) {
         throw Exception('Email sudah terdaftar. Silakan login.');
@@ -81,14 +82,14 @@ class LoginProviders extends GetxService {
         throw Exception(e.message);
       }
     } on ClientException catch (e) {
-      print('❌ ClientException (Network Error): $e');
+      debugPrint('❌ ClientException (Network Error): $e');
       throw Exception('Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
     } on SocketException catch (e) {
-      print('❌ SocketException (No Internet): $e');
+      debugPrint('❌ SocketException (No Internet): $e');
       throw Exception('Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
     } catch (e) {
-      print('❌ Unexpected Register Error: $e');
-      print('❌ Error Type: ${e.runtimeType}');
+      debugPrint('❌ Unexpected Register Error: $e');
+      debugPrint('❌ Error Type: ${e.runtimeType}');
       // Check if error message contains connection-related keywords
       final errorStr = e.toString().toLowerCase();
       if (errorStr.contains('clientexception') ||
@@ -108,10 +109,10 @@ class LoginProviders extends GetxService {
     try {
       await _client.auth.signOut();
     } on SocketException catch (e) {
-      print('⚠️ No Internet during logout: $e');
+      debugPrint('⚠️ No Internet during logout: $e');
       // Continue to clear local session even if network fails
     } catch (e) {
-      print('⚠️ Logout Error: $e');
+      debugPrint('⚠️ Logout Error: $e');
       // Continue to clear local session
     } finally {
       // Clear session from shared preferences

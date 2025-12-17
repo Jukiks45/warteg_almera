@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../models/promo_model.dart';
 // Uncomment when using Supabase for real data
@@ -37,7 +38,7 @@ class PromoController extends GetxController {
       promos.value = _getDummyPromos();
       
     } catch (e) {
-      print('Error loading promos: $e');
+      debugPrint('Error loading promos: $e');
       Get.snackbar(
         'Error',
         'Gagal memuat promo: $e',
@@ -73,7 +74,7 @@ class PromoController extends GetxController {
       }
       
     } catch (e) {
-      print('Error loading promo: $e');
+      debugPrint('Error loading promo: $e');
       Get.snackbar(
         'Error',
         'Gagal memuat detail promo',

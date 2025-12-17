@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+// import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -21,33 +22,33 @@ class CartController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    print('🛒 CartController onInit() called');
+    debugPrint('🛒 CartController onInit() called');
     _loadCart();
   }
 
   // Load cart from Hive
   void _loadCart() {
     try {
-      print('📂 Loading cart from Hive...');
+      debugPrint('📂 Loading cart from Hive...');
 
       final items = _cartBox.values.toList();
       cartItems.assignAll(items);
 
-      print('✅ Cart loaded: ${cartItems.length} items');
+      debugPrint('✅ Cart loaded: ${cartItems.length} items');
 
       // Debug log
       for (var item in cartItems) {
-        print('   📦 ${item.menuNama} x${item.quantity} = Rp${item.subtotal}');
+        debugPrint('   📦 ${item.menuNama} x${item.quantity} = Rp${item.subtotal}');
       }
     } catch (e) {
-      print('❌ Error loading cart: $e');
+      debugPrint('❌ Error loading cart: $e');
     }
   }
 
   // Save cart to Hive
   Future<void> _saveCart() async {
     try {
-      print('💾 Saving cart to Hive...');
+      debugPrint('💾 Saving cart to Hive...');
 
       // Clear box first
       await _cartBox.clear();
@@ -57,9 +58,9 @@ class CartController extends GetxController {
         await _cartBox.put(item.menuId, item);
       }
 
-      print('✅ Cart saved: ${cartItems.length} items');
+      debugPrint('✅ Cart saved: ${cartItems.length} items');
     } catch (e) {
-      print('❌ Error saving cart: $e');
+      debugPrint('❌ Error saving cart: $e');
     }
   }
 
@@ -77,17 +78,17 @@ class CartController extends GetxController {
 
   // Add item to cart
   void addToCart(MenuModel menu, {int quantity = 1}) {
-    print('➕ Adding to cart: ${menu.nama} x$quantity');
+    debugPrint('➕ Adding to cart: ${menu.nama} x$quantity');
 
     final index = cartItems.indexWhere((item) => item.menuId == menu.id);
 
     if (index != -1) {
       cartItems[index].quantity += quantity;
-      print('   Updated quantity: ${cartItems[index].quantity}');
+      debugPrint('   Updated quantity: ${cartItems[index].quantity}');
       cartItems.refresh();
     } else {
       cartItems.add(CartItemModel.fromMenu(menu, quantity: quantity));
-      print('   Added new item');
+      debugPrint('   Added new item');
     }
 
     _saveCart();
@@ -134,14 +135,14 @@ class CartController extends GetxController {
 
   // Remove item from cart
   void removeFromCart(int menuId) {
-    print('🗑️ Removing item from cart: menuId=$menuId');
+    debugPrint('🗑️ Removing item from cart: menuId=$menuId');
     cartItems.removeWhere((item) => item.menuId == menuId);
     _saveCart();
   }
 
   // Clear all cart
   void clearCart() {
-    print('🧹 Clearing all cart items');
+    debugPrint('🧹 Clearing all cart items');
     cartItems.clear();
     removePromo();
     _saveCart();
@@ -177,7 +178,7 @@ class CartController extends GetxController {
 
       return true;
     } catch (e) {
-      print('❌ Error applying promo: $e');
+      debugPrint('❌ Error applying promo: $e');
       return false;
     }
   }
@@ -269,21 +270,21 @@ class CartController extends GetxController {
 
       return orderId;
     } on SocketException catch (e) {
-      print('❌ No Internet Connection: $e');
+      debugPrint('❌ No Internet Connection: $e');
       throw Exception(
           'Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
     } on PostgrestException catch (e) {
-      print('❌ Postgrest error: ${e.message}');
+      debugPrint('❌ Postgrest error: ${e.message}');
       throw Exception('Error database: ${e.message}');
     } catch (e) {
-      print('❌ Error saving order to Supabase: $e');
+      debugPrint('❌ Error saving order to Supabase: $e');
       rethrow;
     }
   }
 
   @override
   void onClose() {
-    print('🔴 CartController onClose() called');
+    debugPrint('🔴 CartController onClose() called');
     super.onClose();
   }
 }
