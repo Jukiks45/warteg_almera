@@ -11,7 +11,7 @@ import '../../../services/local_storage_service.dart';
 class CartController extends GetxController {
   final LocalStorageService _localStorage = Get.find();
   final _supabase = Supabase.instance.client;
-  
+
   final cartItems = <CartItemModel>[].obs;
   final Rx<String?> appliedPromoCode = Rx<String?>(null);
   final Rx<double> promoDiscount = 0.0.obs;
@@ -29,17 +29,16 @@ class CartController extends GetxController {
   void _loadCart() {
     try {
       print('📂 Loading cart from Hive...');
-      
+
       final items = _cartBox.values.toList();
       cartItems.assignAll(items);
-      
+
       print('✅ Cart loaded: ${cartItems.length} items');
-      
+
       // Debug log
       for (var item in cartItems) {
         print('   📦 ${item.menuNama} x${item.quantity} = Rp${item.subtotal}');
       }
-      
     } catch (e) {
       print('❌ Error loading cart: $e');
     }
@@ -49,17 +48,16 @@ class CartController extends GetxController {
   Future<void> _saveCart() async {
     try {
       print('💾 Saving cart to Hive...');
-      
+
       // Clear box first
       await _cartBox.clear();
-      
+
       // Save all items with menuId as key
       for (var item in cartItems) {
         await _cartBox.put(item.menuId, item);
       }
-      
+
       print('✅ Cart saved: ${cartItems.length} items');
-      
     } catch (e) {
       print('❌ Error saving cart: $e');
     }
@@ -67,9 +65,10 @@ class CartController extends GetxController {
 
   // Computed properties
   int get totalItems => cartItems.fold(0, (sum, item) => sum + item.quantity);
-  
-  double get subtotalPrice => cartItems.fold(0.0, (sum, item) => sum + item.subtotal);
-  
+
+  double get subtotalPrice =>
+      cartItems.fold(0.0, (sum, item) => sum + item.subtotal);
+
   double get totalPrice {
     final subtotal = subtotalPrice;
     final total = subtotal - promoDiscount.value;
@@ -79,9 +78,9 @@ class CartController extends GetxController {
   // Add item to cart
   void addToCart(MenuModel menu, {int quantity = 1}) {
     print('➕ Adding to cart: ${menu.nama} x$quantity');
-    
+
     final index = cartItems.indexWhere((item) => item.menuId == menu.id);
-    
+
     if (index != -1) {
       cartItems[index].quantity += quantity;
       print('   Updated quantity: ${cartItems[index].quantity}');
@@ -90,7 +89,7 @@ class CartController extends GetxController {
       cartItems.add(CartItemModel.fromMenu(menu, quantity: quantity));
       print('   Added new item');
     }
-    
+
     _saveCart();
   }
 
@@ -100,7 +99,7 @@ class CartController extends GetxController {
       removeFromCart(menuId);
       return;
     }
-    
+
     final index = cartItems.indexWhere((item) => item.menuId == menuId);
     if (index != -1) {
       cartItems[index].quantity = newQuantity;
@@ -149,7 +148,8 @@ class CartController extends GetxController {
   }
 
   // Apply promo code
-  Future<bool> applyPromo(String code, double discountAmount, double minPurchase) async {
+  Future<bool> applyPromo(
+      String code, double discountAmount, double minPurchase) async {
     try {
       // Validasi minimal pembelian
       if (subtotalPrice < minPurchase) {
@@ -165,7 +165,7 @@ class CartController extends GetxController {
 
       appliedPromoCode.value = code;
       promoDiscount.value = discountAmount;
-      
+
       Get.snackbar(
         'Promo Berhasil Diterapkan',
         'Anda hemat Rp ${_formatCurrency(discountAmount)}',
@@ -174,7 +174,7 @@ class CartController extends GetxController {
         colorText: Colors.white,
         duration: const Duration(seconds: 2),
       );
-      
+
       return true;
     } catch (e) {
       print('❌ Error applying promo: $e');
@@ -205,7 +205,8 @@ class CartController extends GetxController {
   }
 
   // Save order to Supabase
-  Future<String?> saveOrderToSupabase({String paymentMethod = 'cash', String? note}) async {
+  Future<String?> saveOrderToSupabase(
+      {String paymentMethod = 'cash', String? note}) async {
     try {
       if (cartItems.isEmpty) {
         throw Exception('Keranjang kosong');
@@ -213,7 +214,8 @@ class CartController extends GetxController {
 
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        throw Exception('Anda harus login terlebih dahulu untuk melakukan pemesanan');
+        throw Exception(
+            'Anda harus login terlebih dahulu untuk melakukan pemesanan');
       }
 
       // 1. Insert order header
@@ -221,7 +223,7 @@ class CartController extends GetxController {
       // silakan jalankan migration SQL berikut di Supabase:
       // ALTER TABLE orders ADD COLUMN promo_code TEXT;
       // ALTER TABLE orders ADD COLUMN promo_discount NUMERIC(10,2) DEFAULT 0;
-      
+
       final orderData = {
         'user_id': user.id,
         'total_items': totalItems,
@@ -230,14 +232,14 @@ class CartController extends GetxController {
         'payment_method': paymentMethod,
         'note': note,
       };
-      
+
       // Tambahkan promo jika kolom sudah ada di database
       // Untuk sementara, promo hanya digunakan di frontend
       // Uncomment baris berikut setelah menambahkan kolom di database:
       if (appliedPromoCode.value != null) {
-       orderData['promo_code'] = appliedPromoCode.value;
-       orderData['promo_discount'] = promoDiscount.value;
-     }
+        orderData['promo_code'] = appliedPromoCode.value;
+        orderData['promo_discount'] = promoDiscount.value;
+      }
 
       final orderResponse = await _supabase
           .from('orders')
@@ -268,7 +270,8 @@ class CartController extends GetxController {
       return orderId;
     } on SocketException catch (e) {
       print('❌ No Internet Connection: $e');
-      throw Exception('Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
+      throw Exception(
+          'Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
     } on PostgrestException catch (e) {
       print('❌ Postgrest error: ${e.message}');
       throw Exception('Error database: ${e.message}');

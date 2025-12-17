@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 
@@ -13,10 +14,10 @@ const AndroidNotificationChannel channel = AndroidNotificationChannel(
 
 // --- 2. Background Message Handler (Top-level function) ---
 @pragma('vm:entry-point')
+
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print('Handling a background message: ${message.messageId}');
-  print('Data: ${message.data}');
-  // TODO: Implement navigation/data handling for Terminated/Background state
+  debugPrint('Handling a background message: ${message.messageId}');
+  debugPrint('Data: ${message.data}');
 }
 
 class NotificationService extends GetxService {
@@ -25,18 +26,18 @@ class NotificationService extends GetxService {
 
   Future<NotificationService> init() async {
     try {
-      print('>>> Starting NotificationService Initialization...');
+      debugPrint('>>> Starting NotificationService Initialization...');
       FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
       await _setupLocalNotifications();
       _setupForegroundHandler();
       _handleInitialMessage();
       _handleMessageOpenedApp();
       _getFCMToken();
-      print('✅ [SERVICE] Notification and FCM setup complete.');
+      debugPrint('✅ [SERVICE] Notification and FCM setup complete.');
       return this;
     } catch (e, stacktrace) {
-      print('❌ CRITICAL: Failed to initialize NotificationService: $e');
-      print('STACK: $stacktrace');
+      debugPrint('❌ CRITICAL: Failed to initialize NotificationService: $e');
+      debugPrint('STACK: $stacktrace');
       return this;
     }
   }
@@ -75,7 +76,7 @@ class NotificationService extends GetxService {
       requestSoundPermission: true,
     );
 
-    final initializationSettings = InitializationSettings(
+    const initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsDarwin,
     );
@@ -83,7 +84,7 @@ class NotificationService extends GetxService {
     await flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
-        print('--- NOTIFICATION TAPPED ---');
+        debugPrint('--- NOTIFICATION TAPPED ---');
         if (response.payload != null) {
           // Parse payload (dari FCM data)
           try {
@@ -91,7 +92,7 @@ class NotificationService extends GetxService {
             final data = _parsePayload(response.payload!);
             _handleNotificationNavigation(data);
           } catch (e) {
-            print('Error parsing payload: $e');
+            debugPrint('Error parsing payload: $e');
           }
         }
       },
@@ -112,20 +113,20 @@ class NotificationService extends GetxService {
   // --- Handle FCM Foreground (App Terbuka) ---
   void _setupForegroundHandler() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print("\n" + "🔔" * 30);
-      print('📩 FOREGROUND MESSAGE RECEIVED!');
-      print("🔔" * 30);
+      debugPrint("\n${"🔔" * 30}");
+      debugPrint('📩 FOREGROUND MESSAGE RECEIVED!');
+      debugPrint("🔔" * 30);
 
       if (message.notification != null) {
-        print('📌 Title: ${message.notification!.title}');
-        print('📝 Body: ${message.notification!.body}');
+        debugPrint('📌 Title: ${message.notification!.title}');
+        debugPrint('📝 Body: ${message.notification!.body}');
       }
 
       if (message.data.isNotEmpty) {
-        print('📦 Data: ${message.data}');
+        debugPrint('📦 Data: ${message.data}');
       }
 
-      print("🔔" * 30 + "\n");
+      debugPrint("🔔" * 30 + "\n");
 
       flutterLocalNotificationsPlugin.show(
         message.hashCode,
@@ -149,8 +150,8 @@ class NotificationService extends GetxService {
   // Metode untuk Eksperimen 2 (Navigasi dari Background/Closed)
   void _handleMessageOpenedApp() {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('--- ON MESSAGE OPENED APP (Eksperimen 2) ---');
-      print('Message data: ${message.data}');
+      debugPrint('--- ON MESSAGE OPENED APP (Eksperimen 2) ---');
+      debugPrint('Message data: ${message.data}');
 
       // Navigasi berdasarkan tipe notifikasi
       _handleNotificationNavigation(message.data);
@@ -162,8 +163,8 @@ class NotificationService extends GetxService {
     RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) {
-      print('--- GET INITIAL MESSAGE (Eksperimen 3) ---');
-      print('Message data: ${initialMessage.data}');
+      debugPrint('--- GET INITIAL MESSAGE (Eksperimen 3) ---');
+      debugPrint('Message data: ${initialMessage.data}');
 
       // Delay untuk memastikan aplikasi sudah siap
       Future.delayed(const Duration(seconds: 1), () {
@@ -176,23 +177,23 @@ class NotificationService extends GetxService {
   void _getFCMToken() async {
     String? token = await FirebaseMessaging.instance.getToken();
 
-    print("\n" + "=" * 60);
-    print("📱 FCM TOKEN - COPY TOKEN INI!");
-    print("=" * 60);
-    print("FCM Token: $token");
-    print("=" * 60);
-    print("📝 Cara test:");
-    print("1. Copy token di atas");
-    print("2. Firebase Console → Cloud Messaging → Send test message");
-    print("3. Paste token → Test");
-    print("=" * 60 + "\n");
+    debugPrint("\n${"=" * 60}");
+    debugPrint("📱 FCM TOKEN - COPY TOKEN INI!");
+    debugPrint("=" * 60);
+    debugPrint("FCM Token: $token");
+    debugPrint("=" * 60);
+    debugPrint("📝 Cara test:");
+    debugPrint("1. Copy token di atas");
+    debugPrint("2. Firebase Console → Cloud Messaging → Send test message");
+    debugPrint("3. Paste token → Test");
+    debugPrint("=" * 60 + "\n");
 
     // TODO: Simpan token ini ke Supabase di tabel profiles jika perlu
   }
 
   /// Helper untuk navigasi berdasarkan data notifikasi
   void _handleNotificationNavigation(Map<String, dynamic> data) {
-    print('Handling navigation with data: $data');
+    debugPrint('Handling navigation with data: $data');
 
     final type = data['type']?.toString() ?? '';
 
@@ -216,7 +217,7 @@ class NotificationService extends GetxService {
         break;
 
       case 'location':
-        Get.toNamed('/lokasi');
+        Get.toNamed('/location');
         break;
 
       default:

@@ -129,10 +129,12 @@ class LoginController extends GetxController {
     if (username.isEmpty) return _error("Username tidak boleh kosong");
     if (password.isEmpty) return _error("Password tidak boleh kosong");
     if (password.length < 6) return _error("Password minimal 6 karakter");
-    if (confirmPassword.isEmpty)
+    if (confirmPassword.isEmpty) {
       return _error("Konfirmasi password harus diisi");
-    if (password != confirmPassword)
+    }
+    if (password != confirmPassword) {
       return _error("Password dan konfirmasi tidak sama");
+    }
 
     isLoading.value = true;
 

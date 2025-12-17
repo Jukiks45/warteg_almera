@@ -161,7 +161,7 @@ class LocationController extends GetxController {
   // -----------------------
   void setHardcodedWarteg() {
     setTargetLocation(
-        LatLng(-7.919807, 112.597628)); // ganti koordinat sesuai warteg
+        const LatLng(-7.919807, 112.597628)); // ganti koordinat sesuai warteg
   }
 
   void setTargetLocation(LatLng latLng) {
@@ -197,7 +197,7 @@ class LocationController extends GetxController {
                 color: Colors.blue,
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 3),
-                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
+                boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
               ),
             ),
           ),
@@ -234,7 +234,7 @@ class LocationController extends GetxController {
     }
     _lastDistanceCalcAt = now;
 
-    final Distance dist = Distance();
+    const Distance dist = Distance();
     final meters = dist.as(
       LengthUnit.Meter,
       LatLng(userPos.latitude, userPos.longitude),
@@ -342,17 +342,20 @@ class LocationController extends GetxController {
       errorMessage.value = '';
 
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled)
+      if (!serviceEnabled) {
         throw Exception('Layanan lokasi tidak aktif. Aktifkan GPS Anda.');
+      }
 
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied)
+        if (permission == LocationPermission.denied) {
           throw Exception('Izin lokasi ditolak.');
+        }
       }
-      if (permission == LocationPermission.deniedForever)
+      if (permission == LocationPermission.deniedForever) {
         throw Exception('Izin lokasi ditolak permanen.');
+      }
 
       final settings = _getLocationSettings();
       final pos = await Geolocator.getCurrentPosition(
