@@ -125,14 +125,7 @@ class AdminMenuFormView extends GetView<AdminMenuController> {
                         : 'Simpan Menu'),
                     onPressed: () {
                       if (controller.isEdit.value) {
-                        // TODO: implement update menu
-                        Get.back();
-                        controller.resetForm();
-                        Get.snackbar(
-                          'Sukses',
-                          'Menu berhasil diperbarui (dummy)',
-                          snackPosition: SnackPosition.BOTTOM,
-                        );
+                        controller.updateMenu();
                       } else {
                         controller.insertMenu();
                       }

@@ -25,18 +25,14 @@ class PromoModel {
 
   factory PromoModel.fromJson(Map<String, dynamic> json) {
     return PromoModel(
-      id: json['id']?.toString() ?? '',
+      id: json['id'],
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       imageUrl: json['image_url'] ?? '',
-      startDate: json['start_date'] != null 
-          ? DateTime.parse(json['start_date']) 
-          : DateTime.now(),
-      endDate: json['end_date'] != null 
-          ? DateTime.parse(json['end_date']) 
-          : DateTime.now().add(const Duration(days: 30)),
-      discountAmount: (json['discount_amount'] ?? 0).toDouble(),
-      minPurchase: (json['min_purchase'] ?? 0).toDouble(),
+      startDate: DateTime.parse(json['valid_from']),
+      endDate: DateTime.parse(json['valid_until']),
+      discountAmount: (json['discount_amount'] as num).toDouble(),
+      minPurchase: (json['min_purchase'] as num?)?.toDouble() ?? 0,
       isActive: json['is_active'] ?? true,
       promoCode: json['promo_code'],
     );

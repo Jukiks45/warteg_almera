@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../constant/admin_constants.dart';
+
 
 class AuthSessionService extends GetxService {
   static const String _keyIsLoggedIn = 'is_logged_in';
@@ -25,6 +27,10 @@ class AuthSessionService extends GetxService {
   
   bool isLoggedIn() {
     return _prefs.getBool(_keyIsLoggedIn) ?? false;
+  }
+
+  bool get isAdmin {
+    return AdminConstants.isAdmin(getUserId());
   }
 
   

@@ -93,8 +93,8 @@ class MenuView extends GetView<menu.MenuController> {
               )),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => controller.fetchMenuWithDetailHttp(),
-            tooltip: 'Reload Async-Await',
+            onPressed: () => controller.refreshMenus(),
+            tooltip: 'Refresh Menu',
           ),
           IconButton(
             icon: const Icon(Icons.notifications_active),
@@ -157,7 +157,7 @@ class MenuView extends GetView<menu.MenuController> {
 
         // KOREKSI: Menggunakan SingleChildScrollView dan Column
         return RefreshIndicator(
-          onRefresh: controller.fetchMenuWithDetailHttp,
+          onRefresh: controller.refreshMenus,
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -555,7 +555,7 @@ class MenuView extends GetView<menu.MenuController> {
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: controller.fetchMenuWithDetailHttp,
+            onPressed: controller.refreshMenus,
             icon: const Icon(Icons.refresh),
             label: const Text('Coba Lagi'),
           ),

@@ -158,6 +158,75 @@ class AdminMenuController extends GetxController {
     pickedImage.value = null;
   }
 
+  Future<void> updateMenu() async {
+    if (!isAdmin) {
+      Get.snackbar(
+        'Akses Ditolak',
+        'Hanya admin yang dapat mengubah menu',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+
+      String? newImageUrl = imageUrl.value;
+      final oldImageUrl = editingMenu?.gambar;
+
+      // 1. upload gambar baru (jika dipilih)
+      if (pickedImage.value != null) {
+        newImageUrl = await uploadImageToStorage(pickedImage.value!);
+      }
+
+      // 2. update row menu
+      final response = await http.patch(
+        Uri.parse('$baseUrl$menuEndpoint?id=eq.${editingMenu!.id}'),
+        headers: adminHeaders,
+        body: jsonEncode({
+          'Nama': namaC.text,
+          'Harga': int.parse(hargaC.text),
+          'Kategori': kategori.value,
+          'Deskripsi': deskripsiC.text,
+          'Gambar': newImageUrl,
+        }),
+      );
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        // 3. hapus gambar lama (jika ganti)
+        if (pickedImage.value != null &&
+            oldImageUrl != null &&
+            oldImageUrl.isNotEmpty &&
+            oldImageUrl != newImageUrl) {
+          await deleteImage(oldImageUrl);
+        }
+
+        Get.back();
+        resetForm();
+        fetchMenus();
+
+        Get.snackbar(
+          'Sukses',
+          'Menu berhasil diperbarui',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      } else {
+        throw Exception('Gagal update menu');
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        e.toString(),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   // ===== PICK IMAGE =====
   Future<void> pickImage() async {
     final picker = ImagePicker();

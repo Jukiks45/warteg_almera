@@ -14,6 +14,8 @@ import 'services/auth_session_service.dart';
 import 'providers/login_providers.dart';
 import 'services/notification_service.dart'; // Menggunakan nama NotificationService Anda
 
+import 'constant/admin_constants.dart';
+
 /// Initializes all services in the correct order before running the app.
 /// Fungsi ini tetap sama seperti sebelumnya, karena sudah memiliki print/debugPrint yang baik.
 Future<void> initServices() async {
@@ -132,19 +134,13 @@ class MyApp extends StatelessWidget {
 
     // Check if user is admin
     String initialRoute;
+
     if (!isLoggedIn) {
       initialRoute = AppRoutes.login;
+    } else if (authSession.isAdmin) {
+      initialRoute = AppRoutes.adminDashboard;
     } else {
-      // Check if current user is admin
-      final supabaseService = Get.find<SupabaseService>();
-      final currentUser = supabaseService.currentUser;
-      const adminUid = '3c5c71bd-4b7d-43a5-8a7f-8b1ee0b73299';
-
-      if (currentUser?.id == adminUid) {
-        initialRoute = AppRoutes.adminDashboard;
-      } else {
-        initialRoute = AppRoutes.menu;
-      }
+      initialRoute = AppRoutes.menu;
     }
 
     debugPrint(">>> Building MyApp...");
