@@ -19,12 +19,12 @@ class DashboardView extends GetView<DashboardController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ===== HEADER =====
-            Text(
-              'Selamat Datang, Admin 👋',
+            Obx(() => Text(
+              'Selamat Datang, ${controller.adminName.value} 👋',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
-            ),
+            )),
             const SizedBox(height: 6),
             Text(
               'Kelola data aplikasi dari sini',
@@ -37,7 +37,12 @@ class DashboardView extends GetView<DashboardController> {
             _buildAdminCard(
               context,
               title: 'Menu',
-              subtitle: 'Total: 12 menu',
+              subtitle: Obx(
+                () => Text(
+                  'Total: ${controller.totalMenu.value} menu',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
               icon: Icons.restaurant_menu,
               color: Colors.orange,
               onTap: () {
@@ -51,11 +56,31 @@ class DashboardView extends GetView<DashboardController> {
             _buildAdminCard(
               context,
               title: 'Promo',
-              subtitle: 'Total: 4 promo',
+              subtitle: Obx(
+                () => Text(
+                  'Total: ${controller.totalPromo.value} promo',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
               icon: Icons.local_offer,
               color: Colors.redAccent,
               onTap: () {
-                // nanti arahkan ke Admin Promo Page
+                Get.toNamed(AppRoutes.adminPromo);
+              },
+            ),
+            const SizedBox(height: 16),
+            // ===== CARD PROFIL =====
+            _buildAdminCard(
+              context,
+              title: 'Profil Admin',
+              subtitle: const Text(
+                'Kelola informasi akun',
+                style: TextStyle(color: Colors.grey),
+              ),
+              icon: Icons.person,
+              color: Colors.blue,
+              onTap: () {
+                Get.toNamed(AppRoutes.adminProfile);
               },
             ),
           ],
@@ -68,7 +93,7 @@ class DashboardView extends GetView<DashboardController> {
 Widget _buildAdminCard(
   BuildContext context, {
   required String title,
-  required String subtitle,
+  required Widget subtitle,
   required IconData icon,
   required Color color,
   required VoidCallback onTap,
@@ -105,10 +130,7 @@ Widget _buildAdminCard(
                         ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
+                  subtitle,
                 ],
               ),
             ),

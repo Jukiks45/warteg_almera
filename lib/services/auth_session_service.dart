@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constant/admin_constants.dart';
+import '../services/supabase_service.dart';
 
 
 class AuthSessionService extends GetxService {
@@ -30,7 +31,8 @@ class AuthSessionService extends GetxService {
   }
 
   bool get isAdmin {
-    return AdminConstants.isAdmin(getUserId());
+    final supabaseService = Get.find<SupabaseService>();
+    return AdminGuard.isAdmin(supabaseService);
   }
 
   

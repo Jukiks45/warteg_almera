@@ -14,7 +14,6 @@ import 'services/auth_session_service.dart';
 import 'providers/login_providers.dart';
 import 'services/notification_service.dart'; // Menggunakan nama NotificationService Anda
 
-import 'constant/admin_constants.dart';
 
 /// Initializes all services in the correct order before running the app.
 /// Fungsi ini tetap sama seperti sebelumnya, karena sudah memiliki print/debugPrint yang baik.
@@ -139,6 +138,7 @@ class MyApp extends StatelessWidget {
       initialRoute = AppRoutes.login;
     } else if (authSession.isAdmin) {
       initialRoute = AppRoutes.adminDashboard;
+      // initialRoute = AppRoutes.menu;
     } else {
       initialRoute = AppRoutes.menu;
     }

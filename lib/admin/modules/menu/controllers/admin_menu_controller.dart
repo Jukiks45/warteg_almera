@@ -1,14 +1,13 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/admin_menu_model.dart';
 import '../../../../services/admin_api_service.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../constant/admin_constants.dart';
+import '../../../../services/exceptions.dart';
+import '../../dashboard/controllers/dashboard_controller.dart';
 
 class AdminMenuController extends GetxController {
   final AdminApiService _api = AdminApiService();
@@ -19,30 +18,10 @@ class AdminMenuController extends GetxController {
   final imageUrl = ''.obs;
   final pickedImage = Rx<File?>(null);
 
-  static const String baseUrl =
-      'https://vnlmwajtxirlzibojplw.supabase.co/rest/v1';
-  static const String menuEndpoint = '/API_Menu';
-
   // ===== ADMIN CHECK =====
-  bool get isAdmin {
-    return _supabase.currentUser?.id == AdminConstants.adminUid;
-  }
+  bool get isAdmin => AdminGuard.isAdmin(_supabase);
 
-  // ===== ADMIN HEADERS =====
-  Map<String, String> get adminHeaders {
-    final token = _supabase.accessToken;
-
-    if (token == null) {
-      throw Exception('User belum login');
-    }
-
-    return {
-      'apikey': dotenv.env['API_KEY']!,
-      'Authorization': 'Bearer $token',
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation',
-    };
-  }
+  void clearError() => errorMessage.value = '';
 
   @override
   void onInit() {
@@ -85,36 +64,40 @@ class AdminMenuController extends GetxController {
         imageUrl = await uploadImageToStorage(pickedImage.value!);
       }
 
-      final response = await http.post(
-        Uri.parse('$baseUrl$menuEndpoint'),
-        headers: adminHeaders,
-        body: jsonEncode({
-          'Nama': namaC.text,
-          'Harga': int.parse(hargaC.text),
-          'Kategori': kategori.value,
-          'Deskripsi': deskripsiC.text,
-          'Gambar': imageUrl,
-        }),
-      );
+      await _api.insertMenu({
+        'Nama': namaC.text,
+        'Harga': int.parse(hargaC.text),
+        'Kategori': kategori.value,
+        'Deskripsi': deskripsiC.text,
+        'Gambar': imageUrl,
+      });
 
-      if (response.statusCode == 201) {
-        Get.back();
-        resetForm();
-        fetchMenus();
-
-        Get.snackbar(
-          'Sukses',
-          'Menu berhasil ditambahkan',
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
-      } else {
-        throw Exception('Gagal menambah menu: ${response.body}');
+      // Refresh dashboard
+      if (Get.isRegistered<DashboardController>()) {
+        Get.find<DashboardController>().loadDashboard();
       }
+
+      Get.back();
+      resetForm();
+      fetchMenus();
+
+      Get.snackbar(
+        'Sukses',
+        'Menu berhasil ditambahkan',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+    } on ApiException catch (e) {
+      Get.snackbar(
+        'Error',
+        e.message,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } catch (e) {
       Get.snackbar(
         'Error',
-        e.toString(),
+        'Terjadi kesalahan tidak terduga',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -174,32 +157,40 @@ class AdminMenuController extends GetxController {
 
       String? newImageUrl = imageUrl.value;
       final oldImageUrl = editingMenu?.gambar;
+      String? uploadedImagePath;
 
-      // 1. upload gambar baru (jika dipilih)
-      if (pickedImage.value != null) {
-        newImageUrl = await uploadImageToStorage(pickedImage.value!);
-      }
+      try {
+        // 1. upload gambar baru (jika dipilih) - atomic operation
+        if (pickedImage.value != null) {
+          uploadedImagePath = await uploadImageToStorage(pickedImage.value!);
+          newImageUrl = uploadedImagePath;
+        }
 
-      // 2. update row menu
-      final response = await http.patch(
-        Uri.parse('$baseUrl$menuEndpoint?id=eq.${editingMenu!.id}'),
-        headers: adminHeaders,
-        body: jsonEncode({
+        // 2. update row menu - critical operation
+        await _api.updateMenu(editingMenu!.id, {
           'Nama': namaC.text,
           'Harga': int.parse(hargaC.text),
           'Kategori': kategori.value,
           'Deskripsi': deskripsiC.text,
           'Gambar': newImageUrl,
-        }),
-      );
+        });
 
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        // 3. hapus gambar lama (jika ganti)
+        // 3. hapus gambar lama (jika ganti) - only after DB success
         if (pickedImage.value != null &&
             oldImageUrl != null &&
             oldImageUrl.isNotEmpty &&
             oldImageUrl != newImageUrl) {
-          await deleteImage(oldImageUrl);
+          try {
+            await deleteImage(oldImageUrl);
+          } catch (imageError) {
+            debugPrint('Warning: Failed to delete old image: $imageError');
+            // Don't fail the whole operation for this
+          }
+        }
+
+        // Refresh dashboard
+        if (Get.isRegistered<DashboardController>()) {
+          Get.find<DashboardController>().loadDashboard();
         }
 
         Get.back();
@@ -212,13 +203,28 @@ class AdminMenuController extends GetxController {
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
-      } else {
-        throw Exception('Gagal update menu');
+      } catch (e) {
+        // Rollback: hapus gambar yang baru di-upload jika DB gagal
+        if (uploadedImagePath != null) {
+          try {
+            await deleteImage(uploadedImagePath);
+          } catch (rollbackError) {
+            debugPrint('Warning: Failed to rollback uploaded image: $rollbackError');
+          }
+        }
+        rethrow;
       }
+    } on ApiException catch (e) {
+      Get.snackbar(
+        'Error',
+        e.message,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } catch (e) {
       Get.snackbar(
         'Error',
-        e.toString(),
+        'Terjadi kesalahan tidak terduga',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -294,27 +300,32 @@ class AdminMenuController extends GetxController {
       }
 
       // 2. delete row
-      final response = await http.delete(
-        Uri.parse('$baseUrl$menuEndpoint?id=eq.${menu.id}'),
-        headers: adminHeaders,
-      );
+      await _api.deleteMenu(menu.id);
 
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        menuList.removeWhere((m) => m.id == menu.id);
-
-        Get.snackbar(
-          'Sukses',
-          'Menu berhasil dihapus',
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
-      } else {
-        throw Exception('Gagal hapus menu: ${response.body}');
+      // Refresh dashboard
+      if (Get.isRegistered<DashboardController>()) {
+        Get.find<DashboardController>().loadDashboard();
       }
+
+      menuList.removeWhere((m) => m.id == menu.id);
+
+      Get.snackbar(
+        'Sukses',
+        'Menu berhasil dihapus',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+    } on ApiException catch (e) {
+      Get.snackbar(
+        'Error',
+        e.message,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } catch (e) {
       Get.snackbar(
         'Error',
-        e.toString(),
+        'Terjadi kesalahan tidak terduga',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );

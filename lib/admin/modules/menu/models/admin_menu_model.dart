@@ -25,4 +25,14 @@ class AdminMenuModel {
       gambar: json['Gambar'],
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'Nama': nama,
+      'Harga': harga.toInt(),
+      'Kategori': kategori,
+      'Deskripsi': deskripsi,
+      'Gambar': gambar,
+    };
+  }
 }
