@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
@@ -50,7 +51,7 @@ class OrderHistoryController extends GetxController {
             try {
               return OrderModel.fromJson(json as Map<String, dynamic>);
             } catch (e) {
-              print('Error parsing order: $e');
+              debugPrint('Error parsing order: $e');
               return null;
             }
           })
@@ -67,14 +68,14 @@ class OrderHistoryController extends GetxController {
       isLoading.value = false;
       isError.value = true;
       errorMessage.value = 'Tidak ada koneksi internet. Periksa koneksi Anda.';
-      print('❌ No Internet Connection: $e');
+      debugPrint('❌ No Internet Connection: $e');
       orders.value = [];
       orderItems.clear();
     } catch (e) {
       isLoading.value = false;
       isError.value = true;
       errorMessage.value = e.toString().replaceAll('Exception: ', '');
-      print('Error fetching orders: $e');
+      debugPrint('Error fetching orders: $e');
       // Set empty list on error
       orders.value = [];
       orderItems.clear();
@@ -95,17 +96,17 @@ class OrderHistoryController extends GetxController {
             try {
               return OrderItemModel.fromJson(json as Map<String, dynamic>);
             } catch (e) {
-              print('Error parsing order item: $e');
+              debugPrint('Error parsing order item: $e');
               return null;
             }
           })
           .whereType<OrderItemModel>()
           .toList();
     } on SocketException catch (e) {
-      print('❌ No Internet Connection for order items: $e');
+      debugPrint('❌ No Internet Connection for order items: $e');
       orderItems[orderId] = [];
     } catch (e) {
-      print('Error fetching order items for $orderId: $e');
+      debugPrint('Error fetching order items for $orderId: $e');
       orderItems[orderId] = [];
     }
   }

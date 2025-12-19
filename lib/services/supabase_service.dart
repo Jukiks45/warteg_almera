@@ -50,7 +50,8 @@ class SupabaseService extends GetxService {
       if (kDebugMode) {
         debugPrint('❌ No Internet Connection: $e');
       }
-      throw Exception('Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
+      throw Exception(
+          'Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
     } catch (e) {
       if (e.toString().contains('FileSystemException') ||
           e.toString().contains('.env')) {
@@ -74,4 +75,12 @@ class SupabaseService extends GetxService {
   // Database helpers
   SupabaseQueryBuilder from(String table) => client.from(table);
   SupabaseStorageClient get storage => client.storage;
+
+  String? get accessToken {
+    return client.auth.currentSession?.accessToken;
+  }
+
+  bool get isAuthenticated {
+    return client.auth.currentSession != null;
+  }
 }

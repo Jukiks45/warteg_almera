@@ -117,40 +117,40 @@ class _PromoCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Image
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(12),
-              ),
-              child: Image.network(
-                promo.imageUrl,
-                height: 180,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: 180,
-                    color: Colors.grey[300],
-                    child: const Center(
-                      child: Icon(
-                        Icons.image_not_supported,
-                        size: 50,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  );
-                },
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    height: 180,
-                    color: Colors.grey[200],
-                    child: const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
-                },
-              ),
-            ),
+            // ClipRRect(
+            //   borderRadius: const BorderRadius.vertical(
+            //     top: Radius.circular(12),
+            //   ),
+            //   child: Image.network(
+            //     promo.imageUrl,
+            //     height: 180,
+            //     width: double.infinity,
+            //     fit: BoxFit.cover,
+            //     errorBuilder: (context, error, stackTrace) {
+            //       return Container(
+            //         height: 180,
+            //         color: Colors.grey[300],
+            //         child: const Center(
+            //           child: Icon(
+            //             Icons.image_not_supported,
+            //             size: 50,
+            //             color: Colors.grey,
+            //           ),
+            //         ),
+            //       );
+            //     },
+            //     loadingBuilder: (context, child, loadingProgress) {
+            //       if (loadingProgress == null) return child;
+            //       return Container(
+            //         height: 180,
+            //         color: Colors.grey[200],
+            //         child: const Center(
+            //           child: CircularProgressIndicator(),
+            //         ),
+            //       );
+            //     },
+            //   ),
+            // ),
             
             // Content
             Padding(

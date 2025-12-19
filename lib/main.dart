@@ -38,8 +38,7 @@ Future<void> initServices() async {
     await Get.putAsync(() => LocalStorageService().init(), permanent: true);
     debugPrint("[2/5] LocalStorageService initialized and registered");
   } on Exception catch (e) {
-    debugPrint(
-        "CRITICAL: FAILED LocalStorageService init: ${e.toString()}");
+    debugPrint("CRITICAL: FAILED LocalStorageService init: ${e.toString()}");
     throw Exception("Gagal inisialisasi database lokal: ${e.toString()}");
   } catch (e) {
     debugPrint("CRITICAL: FAILED LocalStorageService init: $e");
@@ -91,7 +90,6 @@ Future<void> main() async {
   // Ensure Flutter engine and GetX are ready
   WidgetsFlutterBinding.ensureInitialized();
 
-
   // Firebase initialization must be done outside try-catch
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -104,7 +102,8 @@ Future<void> main() async {
     await Get.putAsync(() => NotificationService().init(), permanent: true);
 
     // PRINT SUCCESS JIKA init() berhasil
-    print('[MAIN] NotificationService berhasil diinisialisasi dan siap digunakan.');
+    debugPrint(
+        '[MAIN] NotificationService berhasil diinisialisasi dan siap digunakan.');
 
     // 3. Inisialisasi semua layanan kritis lainnya
     await initServices();
@@ -132,10 +131,21 @@ class MyApp extends StatelessWidget {
     final authSession = Get.find<AuthSessionService>();
     final isLoggedIn = authSession.isLoggedIn();
 
+    // Check if user is admin
+    String initialRoute;
+
+    if (!isLoggedIn) {
+      initialRoute = AppRoutes.login;
+    } else if (authSession.isAdmin) {
+      initialRoute = AppRoutes.adminDashboard;
+      // initialRoute = AppRoutes.menu;
+    } else {
+      initialRoute = AppRoutes.menu;
+    }
+
     debugPrint(">>> Building MyApp...");
     debugPrint(">>> User logged in: $isLoggedIn");
-    debugPrint(
-        ">>> Initial route: ${isLoggedIn ? AppRoutes.menu : AppRoutes.login}");
+    debugPrint(">>> Initial route: $initialRoute");
 
     return GetMaterialApp(
       title: 'Warung Makan',
@@ -144,7 +154,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      initialRoute: isLoggedIn ? AppRoutes.menu : AppRoutes.login,
+      initialRoute: initialRoute,
       getPages: AppPages.routes,
     );
   }

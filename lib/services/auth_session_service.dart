@@ -1,5 +1,8 @@
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../constant/admin_constants.dart';
+import '../services/supabase_service.dart';
+
 
 class AuthSessionService extends GetxService {
   static const String _keyIsLoggedIn = 'is_logged_in';
@@ -25,6 +28,11 @@ class AuthSessionService extends GetxService {
   
   bool isLoggedIn() {
     return _prefs.getBool(_keyIsLoggedIn) ?? false;
+  }
+
+  bool get isAdmin {
+    final supabaseService = Get.find<SupabaseService>();
+    return AdminGuard.isAdmin(supabaseService);
   }
 
   

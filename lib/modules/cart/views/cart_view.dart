@@ -1,3 +1,4 @@
+// import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/cart_controller.dart';
@@ -472,8 +473,8 @@ class CartView extends GetView<CartController> {
     );
 
     try {
-      print('💳 Processing payment...');
-      
+      debugPrint('💳 Processing payment...');
+
       // Validasi cart tidak kosong
       if (controller.cartItems.isEmpty) {
         throw Exception('Keranjang kosong');
@@ -490,7 +491,7 @@ class CartView extends GetView<CartController> {
         },
       );
 
-      print('✅ Payment processed successfully: $orderId');
+      debugPrint('✅ Payment processed successfully: $orderId');
 
       // Close loading
       Get.back();
@@ -558,7 +559,7 @@ class CartView extends GetView<CartController> {
       Get.back();
 
       final cleanMessage = e.toString().replaceAll('Exception: ', '');
-      print('❌ Payment error: $cleanMessage');
+      debugPrint('❌ Payment error: $cleanMessage');
 
       // Show error
       Get.dialog(

@@ -105,7 +105,7 @@ class LocationView extends GetView<LocationController> {
               mapController: controller.mapController,
               options: MapOptions(
                 initialCenter:
-                    controller.currentLatLng.value ?? LatLng(-6.2088, 106.8456),
+                    controller.currentLatLng.value ?? const LatLng(-6.2088, 106.8456),
                 initialZoom: 15.0,
                 minZoom: 5.0,
                 maxZoom: 18.0,
@@ -143,7 +143,7 @@ class LocationView extends GetView<LocationController> {
                       BoxShadow(
                           color: Colors.black.withOpacity(0.1),
                           blurRadius: 10,
-                          offset: Offset(0, -5))
+                          offset: const Offset(0, -5))
                     ]),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -224,16 +224,16 @@ class LocationView extends GetView<LocationController> {
                                         controller.polylines.value = [];
                                         controller.refreshMarkers();
                                       },
-                                      child: const Text(
-                                        'Sembunyikan Rute',
-                                        style: TextStyle(fontSize: 11),
-                                      ),
                                       style: TextButton.styleFrom(
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 6, vertical: 4),
-                                        minimumSize: Size(0, 0),
+                                        minimumSize: const Size(0, 0),
                                         tapTargetSize:
                                             MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      child: const Text(
+                                        'Sembunyikan Rute',
+                                        style: TextStyle(fontSize: 11),
                                       ),
                                     ),
                                   ],
@@ -265,7 +265,7 @@ class LocationView extends GetView<LocationController> {
                         BoxShadow(
                             color: Colors.black.withOpacity(0.2),
                             blurRadius: 8,
-                            offset: Offset(0, 2))
+                            offset: const Offset(0, 2))
                       ]),
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
                     Container(
@@ -292,7 +292,7 @@ class LocationView extends GetView<LocationController> {
                         BoxShadow(
                             color: Colors.black.withOpacity(0.2),
                             blurRadius: 8,
-                            offset: Offset(0, 2))
+                            offset: const Offset(0, 2))
                       ]),
                   child: Row(children: [
                     _buildModeButton(
@@ -312,7 +312,7 @@ class LocationView extends GetView<LocationController> {
                           BoxShadow(
                               color: Colors.black.withOpacity(0.1),
                               blurRadius: 4,
-                              offset: Offset(0, 2))
+                              offset: const Offset(0, 2))
                         ]),
                     child: Text(controller.currentAccuracyText.value,
                         style: TextStyle(

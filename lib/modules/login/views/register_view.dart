@@ -78,7 +78,7 @@ class RegisterView extends GetView<LoginController> {
                     decoration: InputDecoration(
                       labelText: "Email",
                       hintText: "example@mail.com",
-                      prefixIcon: Icon(Icons.email),
+                      prefixIcon: const Icon(Icons.email),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -91,7 +91,7 @@ class RegisterView extends GetView<LoginController> {
                     controller: controller.regUsernameController,
                     decoration: InputDecoration(
                       labelText: "Username",
-                      prefixIcon: Icon(Icons.person),
+                      prefixIcon: const Icon(Icons.person),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -105,7 +105,7 @@ class RegisterView extends GetView<LoginController> {
                         obscureText: controller.obscureRegisterPassword.value,
                         decoration: InputDecoration(
                           labelText: "Password",
-                          prefixIcon: Icon(Icons.lock),
+                          prefixIcon: const Icon(Icons.lock),
                           suffixIcon: IconButton(
                             icon: Icon(
                               controller.obscureRegisterPassword.value
@@ -128,7 +128,7 @@ class RegisterView extends GetView<LoginController> {
                             controller.obscureRegisterConfirmPassword.value,
                         decoration: InputDecoration(
                           labelText: "Konfirmasi Password",
-                          prefixIcon: Icon(Icons.lock_outline),
+                          prefixIcon: const Icon(Icons.lock_outline),
                           suffixIcon: IconButton(
                             icon: Icon(
                               controller.obscureRegisterConfirmPassword.value
@@ -159,7 +159,7 @@ class RegisterView extends GetView<LoginController> {
                           ),
                         ),
                         child: controller.isLoading.value
-                            ? SizedBox(
+                            ? const SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
