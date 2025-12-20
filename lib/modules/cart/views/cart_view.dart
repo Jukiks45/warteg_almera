@@ -183,14 +183,7 @@ class CartView extends GetView<CartController> {
                         ),
                       ),
                       const Spacer(),
-                      // Subtotal
-                      Text(
-                        'Rp ${_formatCurrency(cartItem.subtotal)}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
+                      // Subtotal tak hapus soalnya jebol
                     ],
                   ),
                 ],
@@ -427,15 +420,18 @@ class CartView extends GetView<CartController> {
 
   Widget _buildPaymentRow(String label, String value, {bool isTotal = false}) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: isTotal ? 16 : 14,
-            fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: isTotal ? 16 : 14,
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
+        const SizedBox(width: 8),
         Text(
           value,
           style: TextStyle(
@@ -443,6 +439,7 @@ class CartView extends GetView<CartController> {
             fontWeight: FontWeight.bold,
             color: isTotal ? Colors.green[700] : Colors.black87,
           ),
+          textAlign: TextAlign.right,
         ),
       ],
     );
@@ -696,6 +693,8 @@ class CartView extends GetView<CartController> {
                         fontWeight: FontWeight.bold,
                         color: Colors.green,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),

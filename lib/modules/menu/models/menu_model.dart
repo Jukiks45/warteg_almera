@@ -20,7 +20,7 @@ class MenuModel {
       id: json['id'] as int,
       nama: json['Nama']?.toString() ?? '',
       deskripsi: json['Deskripsi']?.toString() ?? '',
-      harga: (json['Harga'] as num).toDouble() * 1000, // opsional scaling
+      harga: (json['Harga'] as num).toDouble() , // opsional scaling
       kategori: json['Kategori']?.toString() ?? '',
       gambar: json['Gambar']?.toString(),
     );
