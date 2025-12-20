@@ -8,25 +8,6 @@ class PromoView extends GetView<PromoController> {
 
   @override
   Widget build(BuildContext context) {
-    // Cek jika ada arguments untuk langsung ke detail promo
-    final args = Get.arguments;
-    if (args != null && args is Map<String, dynamic>) {
-      final promoId = args['promoId'];
-      if (promoId != null) {
-        // Load promo by ID dan navigasi ke detail
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          controller.loadPromoById(promoId.toString()).then((_) {
-            if (controller.selectedPromo.value != null) {
-              Get.off(
-                () => PromoDetailView(promo: controller.selectedPromo.value!),
-                transition: Transition.fadeIn,
-              );
-            }
-          });
-        });
-      }
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Promo & Penawaran'),
@@ -41,7 +22,7 @@ class PromoView extends GetView<PromoController> {
           );
         }
 
-        if (controller.promos.isEmpty) {
+        if (!controller.isLoading.value && controller.promos.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

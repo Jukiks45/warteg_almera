@@ -17,24 +17,59 @@ class PromoDetailView extends StatelessWidget {
           SliverAppBar(
             expandedHeight: 250,
             pinned: true,
+            stretch: true,
             backgroundColor: Colors.orange,
             foregroundColor: Colors.white,
             flexibleSpace: FlexibleSpaceBar(
-              background: Image.network(
-                promo.imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[300],
-                    child: const Center(
-                      child: Icon(
-                        Icons.image_not_supported,
-                        size: 80,
-                        color: Colors.grey,
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Color(0xFFFF9800), // Orange
+                          Color(0xFFFF5722), // Deep Orange
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
                     ),
-                  );
-                },
+                  ),
+                  Container(
+                    color: const Color.fromRGBO(0, 0, 0, 0.15),
+                  ),
+                  Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(
+                          Icons.local_offer,
+                          size: 80,
+                          color: Colors.white,
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          'PROMO SPESIAL',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 24,
+                    right: 24,
+                    child: _buildBadge(
+                      'Diskon Rp ${_formatCurrency(promo.discountAmount)}',
+                      Colors.red,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -86,16 +121,16 @@ class PromoDetailView extends StatelessWidget {
                           'Periode Promo',
                           '${_formatDate(promo.startDate)} - ${_formatDate(promo.endDate)}',
                         ),
-                        
+
                         const SizedBox(height: 12),
                         _buildInfoRow(
                           Icons.shopping_cart,
                           'Minimal Pembelian',
-                          promo.minPurchase > 0 
+                          promo.minPurchase > 0
                               ? 'Rp ${_formatCurrency(promo.minPurchase)}'
                               : 'Tidak ada minimal',
                         ),
-                        
+
                         if (promo.promoCode != null) ...[
                           const SizedBox(height: 12),
                           _buildPromoCodeSection(context),
@@ -150,10 +185,14 @@ class PromoDetailView extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        _buildTermItem('Promo hanya berlaku untuk periode yang ditentukan'),
-                        _buildTermItem('Tidak dapat digabungkan dengan promo lain'),
-                        _buildTermItem('Promo berlaku untuk pembelian di aplikasi'),
-                        _buildTermItem('Syarat dan ketentuan dapat berubah sewaktu-waktu'),
+                        _buildTermItem(
+                            'Promo hanya berlaku untuk periode yang ditentukan'),
+                        _buildTermItem(
+                            'Tidak dapat digabungkan dengan promo lain'),
+                        _buildTermItem(
+                            'Promo berlaku untuk pembelian di aplikasi'),
+                        _buildTermItem(
+                            'Syarat dan ketentuan dapat berubah sewaktu-waktu'),
                       ],
                     ),
                   ),
@@ -172,10 +211,10 @@ class PromoDetailView extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+            const BoxShadow(
+              color: Color.fromRGBO(0, 0, 0, 0.1),
               blurRadius: 10,
-              offset: const Offset(0, -2),
+              offset: Offset(0, -2),
             ),
           ],
         ),
@@ -224,7 +263,7 @@ class PromoDetailView extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: const BorderRadius.all(Radius.circular(6)),
       ),
       child: Text(
         text,
@@ -274,10 +313,10 @@ class PromoDetailView extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.orange.withOpacity(0.1),
+        color: const Color.fromRGBO(255, 152, 0, 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.orange.withOpacity(0.3),
+          color: const Color.fromRGBO(255, 152, 0, 0.3),
           width: 1.5,
         ),
       ),
@@ -373,8 +412,18 @@ class PromoDetailView extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     final months = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember'
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dio/dio.dart';
 import '../modules/menu/models/menu_model.dart';
@@ -67,9 +68,12 @@ class ApiService {
       promoEndpoint,
       queryParameters: {
         'is_active': 'eq.true',
+        'deleted_at': 'is.null',
         'order': 'created_at.desc',
       },
     );
+
+    debugPrint('Fetched promos raw: ${response.data}');
 
     return (response.data as List)
         .map((e) => PromoModel.fromJson(e))

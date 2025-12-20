@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class PromoModel {
   final String id;
   final String title;
@@ -29,8 +31,8 @@ class PromoModel {
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       imageUrl: json['image_url'] ?? '',
-      startDate: DateTime.parse(json['valid_from']),
-      endDate: DateTime.parse(json['valid_until']),
+      startDate: DateTime.parse(json['valid_from']).toLocal(),
+      endDate: DateTime.parse(json['valid_until']).toLocal(),
       discountAmount: (json['discount_amount'] as num).toDouble(),
       minPurchase: (json['min_purchase'] as num?)?.toDouble() ?? 0,
       isActive: json['is_active'] ?? true,
@@ -55,6 +57,9 @@ class PromoModel {
 
   bool get isValid {
     final now = DateTime.now();
-    return isActive && now.isAfter(startDate) && now.isBefore(endDate);
+    debugPrint('NOW LOCAL: $now');
+    debugPrint('START LOCAL: $startDate');
+    debugPrint('END LOCAL: $endDate');
+    return isActive && !now.isBefore(startDate) && !now.isAfter(endDate);
   }
 }
