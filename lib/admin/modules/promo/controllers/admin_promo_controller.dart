@@ -105,6 +105,11 @@ class AdminPromoController extends GetxController {
     try {
       isLoading.value = true;
 
+      final currentUser = _supabase.currentUser;
+      if (currentUser == null) {
+        throw Exception('User tidak login');
+      }
+
       await _api.insertPromo({
         'title': titleC.text,
         'description': descC.text,
@@ -118,6 +123,7 @@ class AdminPromoController extends GetxController {
             ? null
             : int.parse(maxUsagePerUserC.text),
         'is_active': isActive.value,
+        'created_by': currentUser.id,
       });
 
       // Refresh dashboard

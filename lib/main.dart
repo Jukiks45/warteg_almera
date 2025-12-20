@@ -14,7 +14,6 @@ import 'services/auth_session_service.dart';
 import 'providers/login_providers.dart';
 import 'services/notification_service.dart'; // Menggunakan nama NotificationService Anda
 
-
 /// Initializes all services in the correct order before running the app.
 /// Fungsi ini tetap sama seperti sebelumnya, karena sudah memiliki print/debugPrint yang baik.
 Future<void> initServices() async {
@@ -97,16 +96,16 @@ Future<void> main() async {
 
   // Gunakan try-catch di sini untuk menangkap kegagalan yang berasal dari notifikasi atau initServices
   try {
-    // 2. Inisialisasi Global Service (Notifikasi)
+    // 2. Inisialisasi semua layanan kritis lainnya
+    await initServices();
+
+    // 3. Inisialisasi Global Service (Notifikasi)
     // PENTING: Panggil init() di sini untuk memastikan FCM/LocalNotif setup terjadi
     await Get.putAsync(() => NotificationService().init(), permanent: true);
 
     // PRINT SUCCESS JIKA init() berhasil
     debugPrint(
         '[MAIN] NotificationService berhasil diinisialisasi dan siap digunakan.');
-
-    // 3. Inisialisasi semua layanan kritis lainnya
-    await initServices();
 
     // 4. Jalankan aplikasi
     runApp(const MyApp());

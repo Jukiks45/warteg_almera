@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart' hide Response;
 import '../admin/modules/menu/models/admin_menu_model.dart';
@@ -115,6 +117,15 @@ class AdminApiService {
   // ==========================
   Future<void> insertPromo(Map<String, dynamic> promoData) async {
     try {
+      // Refresh token untuk pastikan masih valid
+      await _supabase.client.auth.refreshSession();
+
+      if (kDebugMode) {
+        debugPrint('✅ Token refreshed');
+        debugPrint('📧 Current user: ${_supabase.currentUser?.email}');
+        debugPrint('📨 Promo data: $promoData');
+      }
+
       final response = await _dio.post(
         '$baseUrl$promoEndpoint',
         data: promoData,
@@ -122,9 +133,21 @@ class AdminApiService {
       );
 
       if (response.statusCode != 201) {
-        throw ApiException('Gagal menambah promo',
-            statusCode: response.statusCode);
+        throw ApiException(
+          'Gagal menambah promo (Status: ${response.statusCode}) - ${response.data}',
+          statusCode: response.statusCode,
+        );
       }
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ DioException: ${e.response?.statusCode}');
+        debugPrint('📋 Response: ${e.response?.data}');
+        debugPrint('🔑 Headers sent: ${_headers}');
+      }
+      throw ApiException(
+        'Error INSERT Promo: ${e.response?.statusCode} - ${e.response?.data}',
+        statusCode: e.response?.statusCode,
+      );
     } catch (e) {
       if (e is ApiException) rethrow;
       throw ApiException('AdminApiService.insertPromo → $e');
@@ -167,9 +190,16 @@ class AdminApiService {
       );
 
       if (response.statusCode != 201) {
-        throw ApiException('Gagal menambah menu',
-            statusCode: response.statusCode);
+        throw ApiException(
+          'Gagal menambah menu (Status: ${response.statusCode}) - ${response.data}',
+          statusCode: response.statusCode,
+        );
       }
+    } on DioException catch (e) {
+      throw ApiException(
+        'Error INSERT Menu: ${e.response?.statusCode} - ${e.response?.data}',
+        statusCode: e.response?.statusCode,
+      );
     } catch (e) {
       if (e is ApiException) rethrow;
       throw ApiException('AdminApiService.insertMenu → $e');
