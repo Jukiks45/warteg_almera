@@ -52,6 +52,23 @@ class DashboardView extends GetView<DashboardController> {
 
             const SizedBox(height: 16),
 
+            // ===== CARD ORDERS =====
+            _buildAdminCard(
+              context,
+              title: 'Orders',
+              subtitle: const Text(
+                'Kelola pesanan pelanggan',
+                style: TextStyle(color: Colors.grey),
+              ),
+              icon: Icons.receipt_long,
+              color: Colors.green,
+              onTap: () {
+                Get.toNamed(AppRoutes.adminOrders);
+              },
+            ),
+
+            const SizedBox(height: 16),
+
             // ===== CARD PROMO =====
             _buildAdminCard(
               context,

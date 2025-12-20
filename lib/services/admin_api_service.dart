@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart' hide Response;
 import '../admin/modules/menu/models/admin_menu_model.dart';
 import '../admin/modules/promo/models/admin_promo_model.dart';
+import '../admin/modules/orders/models/admin_order_model.dart' show AdminOrderModel, OrderItemModel;
 import 'supabase_service.dart';
 import 'exceptions.dart';
 
@@ -26,7 +27,7 @@ class AdminApiService {
       'apikey': dotenv.env['API_KEY']!,
       'Authorization': 'Bearer $token',
       'Content-Type': 'application/json',
-      'Prefer': 'count=exact',
+      'Prefer': 'count=exact,return=minimal',
     };
   }
 
@@ -241,6 +242,83 @@ class AdminApiService {
     } catch (e) {
       if (e is ApiException) rethrow;
       throw ApiException('AdminApiService.deletePromo → $e');
+    }
+  }
+
+  // ==========================
+  // GET ADMIN ORDERS
+  // ==========================
+  Future<List<AdminOrderModel>> getOrders() async {
+    try {
+      final response = await _dio.get(
+        '$baseUrl/orders?order=created_at.desc',
+        options: Options(headers: _headers),
+      );
+
+      if (response.statusCode != 200) {
+        throw ApiException(
+          'Gagal mengambil orders',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final data = response.data as List;
+      return data.map((e) => AdminOrderModel.fromJson(e)).toList();
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException('AdminApiService.getOrders → $e');
+    }
+  }
+
+  // ==========================
+  // UPDATE ORDER STATUS
+  // ==========================
+  Future<void> updateOrderStatus(String orderId, String status) async {
+    try {
+      final response = await _dio.patch(
+        '$baseUrl/orders?id=eq.$orderId',
+        data: {
+          'status': status,
+        },
+        options: Options(headers: _headers),
+      );
+
+      if (response.statusCode == null ||
+          response.statusCode! < 200 ||
+          response.statusCode! >= 300) {
+        throw ApiException(
+          'Gagal update status order',
+          statusCode: response.statusCode,
+        );
+      }
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException('AdminApiService.updateOrderStatus → $e');
+    }
+  }
+
+  // ==========================
+  // GET ORDER ITEMS BY ORDER ID
+  // ==========================
+  Future<List<OrderItemModel>> getOrderItems(String orderId) async {
+    try {
+      final response = await _dio.get(
+        '$baseUrl/order_items?order_id=eq.$orderId',
+        options: Options(headers: _headers),
+      );
+
+      if (response.statusCode != 200) {
+        throw ApiException(
+          'Gagal mengambil order items',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final data = response.data as List;
+      return data.map((e) => OrderItemModel.fromJson(e)).toList();
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException('AdminApiService.getOrderItems → $e');
     }
   }
 

@@ -22,6 +22,8 @@ import '../admin/modules/promo/views/admin_promo_view.dart';
 import '../admin/modules/promo/views/admin_promo_form_view.dart';
 import '../admin/modules/profiles/bindings/admin_profile_binding.dart';
 import '../admin/modules/profiles/views/admin_profile_view.dart';
+import '../admin/modules/orders/bindings/admin_order_binding.dart';
+import '../admin/modules/orders/views/admin_order_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -85,6 +87,11 @@ class AppPages {
       name: AppRoutes.adminPromoForm,
       page: () => const AdminPromoFormView(),
       binding: AdminPromoBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.adminOrders,
+      page: () => const AdminOrderView(),
+      binding: AdminOrderBinding(),
     ),
     GetPage(
       name: AppRoutes.adminProfile,

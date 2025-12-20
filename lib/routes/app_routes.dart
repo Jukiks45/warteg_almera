@@ -11,5 +11,6 @@ abstract class AppRoutes {
   static const adminMenuForm = '/admin/menu/form';
   static const adminPromo = '/admin/promo';
   static const adminPromoForm = '/admin/promo/form';
+  static const adminOrders = '/admin/orders';
   static const adminProfile = '/admin/profile';
 }

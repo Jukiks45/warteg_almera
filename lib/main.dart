@@ -11,6 +11,7 @@ import 'routes/app_routes.dart';
 import 'services/local_storage_service.dart';
 import 'services/supabase_service.dart';
 import 'services/auth_session_service.dart';
+import 'services/admin_api_service.dart';
 import 'providers/login_providers.dart';
 import 'services/notification_service.dart'; // Menggunakan nama NotificationService Anda
 
@@ -72,13 +73,24 @@ Future<void> initServices() async {
 
   // 5. Initialize LoginProviders
   try {
-    debugPrint(" [5/5] Registering LoginProviders...");
+    debugPrint(" [5/6] Registering LoginProviders...");
     Get.put(LoginProviders(), permanent: true);
-    debugPrint("Γ£à [5/5] LoginProviders registered");
+    debugPrint("Γ£à [5/6] LoginProviders registered");
   } on Exception catch (e) {
     debugPrint(" FAILED LoginProviders init: ${e.toString()}");
   } catch (e) {
     debugPrint(" FAILED LoginProviders init: $e");
+  }
+
+  // 6. Initialize AdminApiService
+  try {
+    debugPrint(" [6/6] Registering AdminApiService...");
+    Get.put(AdminApiService(), permanent: true);
+    debugPrint("Γ£à [6/6] AdminApiService registered");
+  } on Exception catch (e) {
+    debugPrint(" FAILED AdminApiService init: ${e.toString()}");
+  } catch (e) {
+    debugPrint(" FAILED AdminApiService init: $e");
   }
 
   debugPrint("=".padRight(60, '='));
