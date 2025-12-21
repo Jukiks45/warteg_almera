@@ -22,41 +22,40 @@ class LoginProviders extends GetxService {
         email: email,
         password: password,
       );
-      debugPrint('✅ Login successful');
-      return response.user;
+
+      final user = response.user;
+
+      if (user != null) {
+        debugPrint('✅ Login successful, syncing profiles...');
+        
+        // Menggunakan upsert agar jika ID sudah ada, data tetap aman (tidak duplikat)
+        await _client.from('profiles').upsert({
+          'id': user.id,
+          'email': user.email,
+          'updated_at': DateTime.now().toIso8601String(),
+        }, onConflict: 'id');
+
+        debugPrint('✅ Sync profiles berhasil.');
+      }
+
+      return user;
     } on AuthException catch (e) {
       debugPrint('❌ Auth Error: ${e.message}');
-      // Provide more user-friendly messages
       if (e.message.contains('Invalid login credentials')) {
-        throw Exception('Email atau password salah. Silakan coba lagi.');
+        throw Exception('Email atau password salah.');
       } else if (e.message.contains('Email not confirmed')) {
         throw Exception('Email belum diverifikasi. Cek inbox Anda.');
-      } else if (e.message.contains('User not found')) {
-        throw Exception('Akun tidak ditemukan. Silakan register terlebih dahulu.');
       } else {
         throw Exception(e.message);
       }
-    } on ClientException catch (e) {
-      debugPrint('❌ ClientException (Network Error): $e');
-      throw Exception('Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
-    } on SocketException catch (e) {
-      debugPrint('❌ SocketException (No Internet): $e');
-      throw Exception('Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
     } catch (e) {
-      debugPrint('❌ Unexpected Login Error: $e');
-      debugPrint('❌ Error Type: ${e.runtimeType}');
-      // Check if error message contains connection-related keywords
-      final errorStr = e.toString().toLowerCase();
-      if (errorStr.contains('clientexception') ||
-          errorStr.contains('socket') || 
-          errorStr.contains('network') || 
-          errorStr.contains('connection') ||
-          errorStr.contains('host lookup') ||
-          errorStr.contains('failed host') ||
-          errorStr.contains('no address associated')) {
-        throw Exception('Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
+      debugPrint('❌ Login Error: $e');
+      // Jika terjadi error koneksi, lempar pesan koneksi
+      if (e.toString().toLowerCase().contains('socket') || 
+          e.toString().toLowerCase().contains('connection')) {
+        throw Exception('Tidak ada koneksi internet.');
       }
-      throw Exception('Login gagal: ${e.toString()}');
+      throw Exception('Login gagal: $e');
     }
   }
 
@@ -67,55 +66,37 @@ class LoginProviders extends GetxService {
         email: email,
         password: password,
       );
-      debugPrint('✅ Registration successful');
-      return response.user;
+
+      final user = response.user;
+      if (user != null) {
+        debugPrint('✅ Registration successful, inserting into profiles...');
+        // Pastikan nama tabel benar: profiles
+        await _client.from('profiles').insert({
+          'id': user.id,
+          'email': user.email,
+          'created_at': DateTime.now().toIso8601String(),
+        });
+      }
+      return user;
     } on AuthException catch (e) {
       debugPrint('❌ Auth Error: ${e.message}');
-      // Provide more user-friendly messages
-      if (e.message.contains('User already registered')) {
+      if (e.message.contains('already registered')) {
         throw Exception('Email sudah terdaftar. Silakan login.');
-      } else if (e.message.contains('Password should be at least')) {
-        throw Exception('Password terlalu lemah. Minimal 6 karakter.');
-      } else if (e.message.contains('Invalid email')) {
-        throw Exception('Format email tidak valid.');
       } else {
         throw Exception(e.message);
       }
-    } on ClientException catch (e) {
-      debugPrint('❌ ClientException (Network Error): $e');
-      throw Exception('Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
-    } on SocketException catch (e) {
-      debugPrint('❌ SocketException (No Internet): $e');
-      throw Exception('Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
     } catch (e) {
-      debugPrint('❌ Unexpected Register Error: $e');
-      debugPrint('❌ Error Type: ${e.runtimeType}');
-      // Check if error message contains connection-related keywords
-      final errorStr = e.toString().toLowerCase();
-      if (errorStr.contains('clientexception') ||
-          errorStr.contains('socket') || 
-          errorStr.contains('network') || 
-          errorStr.contains('connection') ||
-          errorStr.contains('host lookup') ||
-          errorStr.contains('failed host') ||
-          errorStr.contains('no address associated')) {
-        throw Exception('Tidak ada koneksi internet. Periksa koneksi Anda dan coba lagi.');
-      }
-      throw Exception('Registrasi gagal: ${e.toString()}');
+      debugPrint('❌ Register Error: $e');
+      throw Exception('Registrasi gagal.');
     }
   }
 
   Future<void> logout() async {
     try {
       await _client.auth.signOut();
-    } on SocketException catch (e) {
-      debugPrint('⚠️ No Internet during logout: $e');
-      // Continue to clear local session even if network fails
     } catch (e) {
       debugPrint('⚠️ Logout Error: $e');
-      // Continue to clear local session
     } finally {
-      // Clear session from shared preferences
       final authSession = Get.find<AuthSessionService>();
       await authSession.clearSession();
     }
