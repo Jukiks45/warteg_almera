@@ -143,7 +143,7 @@ class AdminApiService {
       if (kDebugMode) {
         debugPrint('❌ DioException: ${e.response?.statusCode}');
         debugPrint('📋 Response: ${e.response?.data}');
-        debugPrint('🔑 Headers sent: ${_headers}');
+        debugPrint('🔑 Headers sent: $_headers');
       }
       throw ApiException(
         'Error INSERT Promo: ${e.response?.statusCode} - ${e.response?.data}',

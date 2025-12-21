@@ -39,10 +39,10 @@ class PromoDetailView extends StatelessWidget {
                   Container(
                     color: const Color.fromRGBO(0, 0, 0, 0.15),
                   ),
-                  Center(
+                  const Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
+                      children: [
                         Icon(
                           Icons.local_offer,
                           size: 80,
@@ -208,10 +208,10 @@ class PromoDetailView extends StatelessWidget {
       // Bottom Button
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Colors.white,
           boxShadow: [
-            const BoxShadow(
+            BoxShadow(
               color: Color.fromRGBO(0, 0, 0, 0.1),
               blurRadius: 10,
               offset: Offset(0, -2),

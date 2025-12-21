@@ -84,7 +84,7 @@ class AdminMenuFormView extends GetView<AdminMenuController> {
 
             // ===== KATEGORI =====
             Obx(() => DropdownButtonFormField<String>(
-                  value: controller.kategori.value.isEmpty
+                  initialValue: controller.kategori.value.isEmpty
                       ? null
                       : controller.kategori.value,
                   decoration: const InputDecoration(
