@@ -2,19 +2,20 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-// --- 1. Custom Sound Channel Definition (Android) ---
+// --- 1. Definisi Custom Sound Channel (Android) ---
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
   'high_importance_channel',
   'High Importance Notifications',
   description: 'This channel is used for important order status updates.',
   importance: Importance.max,
-  sound: RawResourceAndroidNotificationSound('hidupjokowi'),
+  sound: RawResourceAndroidNotificationSound(
+      'hidupjokowi'), // NAMA FILE AUDIO (TANPA EKSTENSI)
 );
 
 // --- 2. Background Message Handler (Top-level function) ---
 @pragma('vm:entry-point')
-
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   debugPrint('Handling a background message: ${message.messageId}');
   debugPrint('Data: ${message.data}');
@@ -27,12 +28,29 @@ class NotificationService extends GetxService {
   Future<NotificationService> init() async {
     try {
       debugPrint('>>> Starting NotificationService Initialization...');
+
+      // 1. FCM + Local notification setup (this is OK at startup)
       FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
       await _setupLocalNotifications();
       _setupForegroundHandler();
       _handleInitialMessage();
       _handleMessageOpenedApp();
-      _getFCMToken();
+
+      debugPrint('[NOTIF] NotificationService initialized');
+
+      // 2. 🔐 WAIT for Supabase auth to be READY
+      Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+        final session = data.session;
+
+        if (session != null) {
+          debugPrint('[NOTIF] User authenticated → saving FCM token');
+          _getFCMToken();
+          _listenTokenRefresh();
+        } else {
+          debugPrint('[NOTIF] User logged out');
+        }
+      });
+
       debugPrint('✅ [SERVICE] Notification and FCM setup complete.');
       return this;
     } catch (e, stacktrace) {
@@ -175,20 +193,52 @@ class NotificationService extends GetxService {
 
   // --- Get and Log FCM Token ---
   void _getFCMToken() async {
-    String? token = await FirebaseMessaging.instance.getToken();
+    debugPrint('🧪 _getFCMToken called');
 
-    debugPrint("\n${"=" * 60}");
-    debugPrint("📱 FCM TOKEN - COPY TOKEN INI!");
-    debugPrint("=" * 60);
-    debugPrint("FCM Token: $token");
-    debugPrint("=" * 60);
-    debugPrint("📝 Cara test:");
-    debugPrint("1. Copy token di atas");
-    debugPrint("2. Firebase Console → Cloud Messaging → Send test message");
-    debugPrint("3. Paste token → Test");
-    debugPrint("=" * 60 + "\n");
+    final token = await FirebaseMessaging.instance.getToken();
+    debugPrint('🧪 FCM token: $token');
 
-    // TODO: Simpan token ini ke Supabase di tabel profiles jika perlu
+    final user = Supabase.instance.client.auth.currentUser;
+    debugPrint('🧪 Supabase user: $user');
+
+    if (token == null) {
+      debugPrint('❌ Token is NULL');
+      return;
+    }
+
+    if (user == null) {
+      debugPrint('❌ User is NULL (not logged in yet)');
+      return;
+    }
+
+    try {
+      await Supabase.instance.client.from('user_fcm_tokens').upsert({
+        'user_id': user.id,
+        'token': token,
+      });
+
+      debugPrint('✅ FCM token saved to Supabase');
+    } catch (e) {
+      debugPrint('❌ Failed to save FCM token: $e');
+    }
+  }
+
+  void _listenTokenRefresh() {
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) return;
+
+      try {
+        await Supabase.instance.client.from('user_fcm_tokens').upsert({
+          'user_id': user.id,
+          'token': newToken,
+        });
+
+        debugPrint('🔄 FCM token refreshed & saved');
+      } catch (e) {
+        debugPrint('❌ Failed to refresh FCM token: $e');
+      }
+    });
   }
 
   /// Helper untuk navigasi berdasarkan data notifikasi

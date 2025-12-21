@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "firebase-admin": "npm:firebase-admin@11.11.1",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2"
+  }
+}
