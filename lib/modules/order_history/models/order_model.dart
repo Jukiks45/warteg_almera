@@ -27,7 +27,7 @@ class OrderModel {
       totalPrice: (json['total_price'] is String)
           ? double.tryParse(json['total_price']) ?? 0.0
           : (json['total_price'] ?? 0.0).toDouble(),
-      status: json['status'] ?? 'paid',
+      status: json['status'] ?? 'pending',
       paymentMethod: json['payment_method'] ?? 'cash',
       note: json['note'],
       createdAt: json['created_at'] != null
@@ -53,14 +53,15 @@ class OrderModel {
     switch (status) {
       case 'pending':
         return 'Menunggu';
-      case 'paid':
-        return 'Dibayar';
+      case 'processing':
+        return 'Diproses';
       case 'completed':
         return 'Selesai';
-      case 'cancelled':
-        return 'Dibatalkan';
+      case 'rejected':
+        return 'Ditolak';
       default:
         return status;
     }
   }
+
 }
