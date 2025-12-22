@@ -229,7 +229,7 @@ class CartController extends GetxController {
         'user_id': user.id,
         'total_items': totalItems,
         'total_price': totalPrice,
-        'status': 'paid',
+        'status': 'pending',
         'payment_method': paymentMethod,
         'note': note,
       };
