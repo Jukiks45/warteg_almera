@@ -9,7 +9,7 @@
 
 
     <application
-        android:label="warteg_almera"
+        android:label="Warteg Almera"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
